@@ -584,3 +584,5 @@ for type=1,5 do
         model:setIllumination("transport_space_ship_" .. type .. "/transport_space_ship_" .. type .. "_illumination.png")
     end
 end
+
+require("model_data_trek_pack.lua")

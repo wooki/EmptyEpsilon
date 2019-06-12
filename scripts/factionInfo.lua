@@ -10,6 +10,11 @@ While all other races were driven to the stars out of greed or scientific resear
 
 Due to human regulations on spaceships, naval ships are the only ones permitted in deep space. However, this hasn't completely prevented humans outside of the navy from spacefaring, as quite a few humans sign up on alien trading vessels or pirate raiders.]])
 
+rebels = FactionInfo():setName("Human Rebels")
+rebels:setGMColor(0, 128, 255)
+rebels:setDescription([[TODO: some info about the rebels]])
+rebels:setEnemy(human)
+
 kraylor = FactionInfo():setName("Kraylor")
 kraylor:setGMColor(255, 0, 0)
 kraylor:setEnemy(human)
@@ -61,3 +66,48 @@ It is known, however, that the strict Ktlitan hierarchy starts with their Queen 
 Hive:setEnemy(human)
 Hive:setEnemy(exuari)
 Hive:setEnemy(kraylor)
+
+
+
+ferengi = FactionInfo():setName("Ferengi")
+ferengi:setGMColor(128, 128, 128)
+ferengi:setDescription([[Ferengi are profit seeking species]])
+
+
+starfleet = FactionInfo():setName("Starfleet")
+starfleet:setGMColor(255, 255, 255)
+starfleet:setDescription([[United Federation of Planets]])
+
+
+
+klingon = FactionInfo():setName("Klingons")
+klingon:setGMColor(255, 0, 0)
+klingon:setDescription([[The Klingon Empire]])
+
+
+
+romulan = FactionInfo():setName("Romulans")
+romulan:setGMColor(255, 0, 128)
+romulan:setDescription([[Romulan Empire]])
+
+
+
+borg = FactionInfo():setName("Borg")
+borg:setGMColor(0, 255, 0)
+borg:setDescription([[The Borg]])
+
+klingon:setEnemy(neutral)
+romulan:setEnemy(neutral)
+borg:setEnemy(neutral)
+klingon:setEnemy(human)
+romulan:setEnemy(human)
+borg:setEnemy(human)
+
+klingon:setEnemy(starfleet)
+romulan:setEnemy(starfleet)
+romulan:setEnemy(klingon)
+
+borg:setEnemy(starfleet)
+borg:setEnemy(klingon)
+borg:setEnemy(romulan)
+borg:setEnemy(ferengi)
