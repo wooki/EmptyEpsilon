@@ -555,8 +555,7 @@ function generic_behaviour(act)
           if (trader.comms_data['type'] == 'trader') then
 
             player:addCustomButton("Weapons","awayteam","Transport Away Team",function()
-              player:removeCustom("awayteam")
-              trader.comms_data['cargo'] = 'checking'
+              sendAwayTeam(trader, player)
             end)
 
           elseif (trader.comms_data['type'] == 'smuggler') then
@@ -580,6 +579,7 @@ function generic_behaviour(act)
               trader:orderFlyTowards(run_x, run_y)
 
               player:addCustomMessage("Relay","smugglerrun","Away team reports the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign().." you may persue when ready.")
+              player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign()..".", "Red")
 
               -- drain the players energy
               local newEnergy = player:getEnergy() - 500
@@ -596,8 +596,7 @@ function generic_behaviour(act)
 
             else
               player:addCustomButton("Weapons","awayteam","Transport Away Team",function()
-                player:removeCustom("awayteam")
-                trader.comms_data['cargo'] = 'checking'
+                sendAwayTeam(trader, player)
               end)
             end
 
@@ -615,6 +614,7 @@ function generic_behaviour(act)
             trader:setImpulseMaxSpeed(random(80, 100))
 
             player:addCustomMessage("Relay","rebelrun","Away team reports the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign().." you may persue when ready.")
+            player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign()..".", "Red")
 
             -- drain the players energy
             local newEnergy = player:getEnergy() - 800
@@ -661,28 +661,18 @@ function generic_behaviour(act)
 
         elseif (trader.comms_data['cargo'] == 'checking') then
 
-          -- maybe add a delay here but for now just instantly return
-          if (trader.comms_data['type'] == 'trader') then
+          -- do nothing, this is now set-up by the weapons special button
+          -- add a variable delay here
 
-            local player = getPlayerByCallSign(trader.comms_data['stopped_by'])
-
-            trader.comms_data['cargo'] = 'ok'
-            player:addCustomMessage("Relay","awayteamdone","Away team reports no contraband aboard the "..trader:getCallSign()..", you may clear them to leave.")
-
-          elseif (trader.comms_data['type'] == 'smuggler') then
-
-              local player = getPlayerByCallSign(trader.comms_data['stopped_by'])
-
-              trader.comms_data['cargo'] = 'contraband'
-              player:addCustomMessage("Relay","awayteamdone","Away team reports we have found contraband aboard the "..trader:getCallSign()..
-              [[, we have taken their captain into custody and attached a inhibitor to their ship, clear them to head home when you are ready.]])
-          end
         end
 
       elseif (trader.comms_data['state'] == 'dock mine' or trader.comms_data['state'] == 'dock hub') then
 
         -- has it arrived, is it close?
         if (trader:isDocked(trader.comms_data['destination'])) then
+
+          -- always clear cargo check
+          trader.comms_data['cargo'] = nil
 
           -- check for rebel delivery
           if (trader.comms_data['type'] == 'rebel') then
@@ -769,6 +759,32 @@ function generic_behaviour(act)
   end
 
 
+end
+
+function sendAwayTeam(trader, player)
+
+  player:removeCustom("awayteam")
+  trader.comms_data['cargo'] = 'checking'
+
+  local delay = math.random(10, 60)
+  local checking_message_id = 'checking-message-' .. tostring(math.random(1, 99999))
+  addDelayedCallback(timers, checking_message_id, delay, function()
+
+    if (trader.comms_data['type'] == 'trader') then
+
+      trader.comms_data['cargo'] = 'ok'
+      player:addCustomMessage("Relay","awayteamdone","Away team reports no contraband aboard the "..trader:getCallSign()..", you may clear them to leave.")
+      player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." has no contraband, they have returning to the "..player:getCallSign()..".", "White")
+
+    elseif (trader.comms_data['type'] == 'smuggler') then
+
+        trader.comms_data['cargo'] = 'contraband'
+        player:addCustomMessage("Relay","awayteamdone","Away team reports we have found contraband aboard the "..trader:getCallSign()..
+        [[, we have taken their captain into custody and attached a inhibitor to their ship, clear them to head home when you are ready.]])
+        player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." has contraband aboard, they have returning to the "..player:getCallSign()..". We have taken their captain into custody and attached a inhibitor to their ship, clear them to head home when you are ready.", "White")
+
+    end
+  end)
 end
 
 -- create kraylor fleet and suplement with rebels
@@ -876,13 +892,19 @@ function missionMessage(message_id, message)
 
     if (player_ship:hasPlayerAtPosition("Relay")) then
       player_ship:addCustomMessage("Relay",message_id, message)
+      player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
     elseif (player_ship:hasPlayerAtPosition("Operations")) then
       player_ship:addCustomMessage("Operations",message_id, message)
+      player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
     elseif (player_ship:hasPlayerAtPosition("single")) then
       player_ship:addCustomMessage("single",message_id, message)
+      player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
+    else
+      addDelayedCallback(timers, message_id .. '-delayed', 5, function()
+        missionMessage(message_id, message)
+      end)
     end
 
-    player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
   end
 
   end)

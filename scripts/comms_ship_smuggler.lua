@@ -39,7 +39,7 @@ function stoppedMenu()
 
   elseif (comms_target.comms_data['cargo'] == 'checking') then
 
-    setCommsMessage("Away team report they are aboard the "..comms_target:getCallSign()..", checking now.");
+    setCommsMessage("Away team report they are aboard the "..comms_target:getCallSign().." and conduction a cargo inspection, please be patient.");
 
   end
 
@@ -61,7 +61,7 @@ function stoppedMenu()
 
     comms_target.comms_data['state'] = comms_target.comms_data['original_state']
     comms_target.comms_data['stopped_by'] = nil
-    comms_target.comms_data['cargo'] = nil
+    -- comms_target.comms_data['cargo'] = nil
     comms_target:orderFlyTowards(comms_target.comms_data['destination']:getPosition())
 
     setCommsMessage("Thank you "..player:getCallSign()..", "..comms_target:getCallSign().." out");
@@ -113,72 +113,83 @@ function mainMenu()
 
   elseif (comms_target.comms_data['state'] == 'stopped') then
 
-    setCommsMessage("We're holding position for you "..player:getCallSign()..", in your own time.");
-    stoppedMenu()
+    if (comms_target.comms_data['cargo'] ~= nil and (comms_target.comms_data['cargo'] == 'ok' or comms_target.comms_data['cargo'] == 'contraband')) then
+      setCommsMessage("Standing by for clearance to leave "..player:getCallSign()..".");
+      stoppedMenu()
+    else
+      setCommsMessage("We're holding position for you "..player:getCallSign()..", in your own time.");
+      stoppedMenu()
+    end
 
   else -- is neither running or stopped
 
-    setCommsMessage(comms_target.comms_data['type'].." > ".."This is "..comms_target:getCallSign()..", what do you want "..player:getCallSign().."?")
+    setCommsMessage(comms_target.comms_data['type'].."/"..tostring(comms_target.comms_data['cargo']).." > ".."This is "..comms_target:getCallSign()..", what do you want "..player:getCallSign().."?")
 
-    -- request stop
-    addCommsReply("Hold position while we approach.", function()
+    if (comms_target.comms_data['cargo'] ~= nil and (comms_target.comms_data['cargo'] == 'ok-rewarded' or comms_target.comms_data['cargo'] == 'ok' or comms_target.comms_data['cargo'] == 'contraband')) then
 
-      -- sometimes they run!
-      if (willRun(comms_target)) then
+      setCommsMessage("You've already checked us "..player:getCallSign()..", give us a break!");
 
-        comms_target.comms_data['original_state'] = comms_target.comms_data['state']
-        comms_target.comms_data['state'] = 'running'
-        comms_target.comms_data['chased_by'] = player:getCallSign()
+    else
+      -- request stop
+      addCommsReply("Hold position while we approach.", function()
 
-        -- work out a position a long way, immediately away from the player
-        local player_x, player_y = player:getPosition()
-        local trader_x, trader_y = comms_target:getPosition()
-        local angle = angleFromVector(player_x, player_y, trader_x, trader_y)
-        local run_x, run_y = vectorFromAngle(angle, 100000)
+        -- sometimes they run!
+        if (willRun(comms_target)) then
 
-        -- make it fast as well player ships max is 90 (except fighters)
-        comms_target:setImpulseMaxSpeed(random(80, 100))
-        comms_target:orderFlyTowards(run_x, run_y)
+          comms_target.comms_data['original_state'] = comms_target.comms_data['state']
+          comms_target.comms_data['state'] = 'running'
+          comms_target.comms_data['chased_by'] = player:getCallSign()
 
-        local range = distance(comms_target, player)
+          -- work out a position a long way, immediately away from the player
+          local player_x, player_y = player:getPosition()
+          local trader_x, trader_y = comms_target:getPosition()
+          local angle = angleFromVector(player_x, player_y, trader_x, trader_y)
+          local run_x, run_y = vectorFromAngle(angle, 100000)
 
-        -- rebels who are close will always reveal
-        if comms_target.comms_data['type'] == 'rebel' and range < 10000 then
-          -- change faction and scan
-            comms_target:setFaction("Human Rebels")
-            comms_target:setCommsFunction(rebelComms)
-            comms_target:setScannedByFaction("Human Navy", true)
+          -- make it fast as well player ships max is 90 (except fighters)
+          comms_target:setImpulseMaxSpeed(random(80, 100))
+          comms_target:orderFlyTowards(run_x, run_y)
 
-            -- beef up rebel ships with some weapons
-            comms_target:setShields(55, 55)
-            comms_target:setBeamWeapon(0, 45, 0, 1000, 8, 6)
-            comms_target:setWeaponTubeCount(1) -- Amount of torpedo tubes, and loading time of the tubes.
-            comms_target:setWeaponTubeDirection(0, 0):setWeaponTubeExclusiveFor(0, "HVLI")
-            comms_target:setWeaponStorageMax("HVLI", 5)
-            comms_target:setWeaponStorage("HVLI", random(1, 5))
+          local range = distance(comms_target, player)
 
-            comms_target.comms_data['loading'] = true
-            comms_target.comms_data['loaded'] = false
-            comms_target:orderAttack(player)
+          -- rebels who are close will always reveal
+          if comms_target.comms_data['type'] == 'rebel' and range < 10000 then
+            -- change faction and scan
+              comms_target:setFaction("Human Rebels")
+              comms_target:setCommsFunction(rebelComms)
+              comms_target:setScannedByFaction("Human Navy", true)
 
-            setCommsMessage("Long live the Rebellion!");
+              -- beef up rebel ships with some weapons
+              comms_target:setShields(55, 55)
+              comms_target:setBeamWeapon(0, 45, 0, 1000, 8, 6)
+              comms_target:setWeaponTubeCount(1) -- Amount of torpedo tubes, and loading time of the tubes.
+              comms_target:setWeaponTubeDirection(0, 0):setWeaponTubeExclusiveFor(0, "HVLI")
+              comms_target:setWeaponStorageMax("HVLI", 5)
+              comms_target:setWeaponStorage("HVLI", random(1, 5))
+
+              comms_target.comms_data['loading'] = true
+              comms_target.comms_data['loaded'] = false
+              comms_target:orderAttack(player)
+
+              setCommsMessage("Long live the Rebellion!");
+          else
+            setCommsMessage("Go to hell "..player:getCallSign().."! We're just trying to make a living!");
+          end
+
         else
-          setCommsMessage("Go to hell "..player:getCallSign().."! We're just trying to make a living!");
+          -- sensibly stop for you
+          comms_target.comms_data['original_state'] = comms_target.comms_data['state']
+          comms_target.comms_data['state'] = 'stopped'
+          comms_target.comms_data['stopped_by'] = player:getCallSign()
+          comms_target:orderIdle()
+
+          setCommsMessage("Roger "..player:getCallSign()..", holding position.");
+
+          stoppedMenu()
         end
 
-      else
-        -- sensibly stop for you
-        comms_target.comms_data['original_state'] = comms_target.comms_data['state']
-        comms_target.comms_data['state'] = 'stopped'
-        comms_target.comms_data['stopped_by'] = player:getCallSign()
-        comms_target:orderIdle()
-
-        setCommsMessage("Roger "..player:getCallSign()..", holding position.");
-
-        stoppedMenu()
-      end
-
-    end)
+      end)
+    end
 
   end
 
