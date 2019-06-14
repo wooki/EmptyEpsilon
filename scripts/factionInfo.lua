@@ -78,6 +78,9 @@ starfleet = FactionInfo():setName("Starfleet")
 starfleet:setGMColor(255, 255, 255)
 starfleet:setDescription([[United Federation of Planets]])
 
+sepratists = FactionInfo():setName("Federation Sepratists")
+sepratists:setGMColor(0, 140, 235)
+sepratists:setDescription([[Federation Sepratists]])
 
 
 klingon = FactionInfo():setName("Klingons")
@@ -95,6 +98,9 @@ romulan:setDescription([[Romulan Empire]])
 borg = FactionInfo():setName("Borg")
 borg:setGMColor(0, 255, 0)
 borg:setDescription([[The Borg]])
+
+sepratists:setEnemy(starfleet)
+starfleet:setEnemy(sepratists)
 
 klingon:setEnemy(neutral)
 romulan:setEnemy(neutral)

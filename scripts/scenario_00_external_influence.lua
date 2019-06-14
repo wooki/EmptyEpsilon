@@ -1,7 +1,9 @@
 -- Name: External Influences
 -- Description: Players police a trade route in the Euripides system as a rebel scheme unfolds
 -- Type: Mission
--- Variation[1 Crew]: One player ship
+-- Variation[1 Galaxy Class]: One player ship, Galaxy Class
+-- Variation[1 Constitution Class]: One player ship, Constitution Class
+-- Variation[1 Defiant Class]: One player ship, Defiant Class
 -- Variation[2 Crews]: Two player ships
 -- Variation[3 Crews]: Three player ships
 
@@ -18,6 +20,45 @@ player_ship_names = shuffle({
   "Hercules",
   "Odysseus",
   "Orpheus"
+})
+
+klingon_ship_names = shuffle({
+  "Aktuh",
+  "Akua",
+  "Akva",
+  "Azetbur",
+  "BaHwil'",
+  "Baqghol",
+  "Bej'joq",
+  "Chen'a'meQ",
+  "Ch'marq",
+  "Daqchov",
+  "D'k Tahg",
+  "Fragh'ka",
+  "Ghanjaq",
+  "GhonDoq",
+  "Hegh'mar",
+  "Hegh'ta",
+  "Key'vong",
+  "Neng'ta",
+  "Tur'Nask",
+  "Hegh'ta",
+  "Ki'tang",
+  "Buruk",
+  "Ning'tao",
+  "Slivin",
+  "Vorn",
+  "Y'tem",
+  "Klothos",
+  "Par'tok",
+  "Negh'Var",
+  "Hor'Cha",
+  "Fek'lhr",
+  "Maht-H'a",
+  "Qu'Vat",
+  "Vor'nak",
+  "Toh'Kaht",
+  "Vo'taq"
 })
 
 -- different freighter types
@@ -64,11 +105,11 @@ trade_hub_comms = {
 mining_station_comms = {
     friendlyness = 100,
     stock = {
-        Homing = 0,
+        Homing = 10,
         HVLI = 50,
         Mine = 20,
         Nuke = 2,
-        EMP = 0
+        EMP = 2
     },
     weapons = {
         Homing = 60,
@@ -190,14 +231,14 @@ function map()
   -- trade hubs
   trade_hubs = {}
   trade_hub_planet = Planet():setPosition(-16761, 8582):setPlanetRadius(1000):setPlanetSurfaceTexture("planets/planet-1.png"):setPlanetCloudTexture("planets/clouds-1.png"):setPlanetAtmosphereTexture("planets/atmosphere.png"):setPlanetAtmosphereColor(0.3,0.3,1.0):setCallSign("Amphipolis")
-  trade_hub = SpaceStation():setPosition(-14761, 10582):setTemplate('Large Station'):setFaction("Independent"):setRotation(random(0, 360)):setCallSign("Amphipolis Trade Hub")
+  trade_hub = SpaceStation():setPosition(-14761, 10582):setTemplate('Terok Nor'):setFaction("Independent"):setRotation(random(0, 360)):setCallSign("Amphipolis Trade Hub")
   trade_hub.comms_data = trade_hub_comms
   trade_hub:setCommsScript('comms_station_unfriendly.lua')
   table.insert(trade_hubs, trade_hub)
 
   -- create two additonal hub stations
-  trade_hub2 = SpaceStation():setPosition(-1847, 23224):setTemplate('Small Station'):setFaction("Independent"):setRotation(random(0, 360)):setCallSign("Amphipolis Refuel Station")
-  trade_hub3 = SpaceStation():setPosition(29009, 30008):setTemplate('Small Station'):setFaction("Independent"):setRotation(random(0, 360)):setCallSign("Euripides Weather Station")
+  trade_hub2 = SpaceStation():setPosition(-1847, 23224):setTemplate('Regula Station'):setFaction("Independent"):setRotation(random(0, 360)):setCallSign("Amphipolis Refuel Station")
+  trade_hub3 = SpaceStation():setPosition(29009, 30008):setTemplate('Regula Station'):setFaction("Independent"):setRotation(random(0, 360)):setCallSign("Euripides Weather Station")
   trade_hub2.comms_data = trade_hub_comms
   trade_hub3.comms_data = trade_hub_comms
   trade_hub2:setCommsScript('comms_station_unfriendly.lua')
@@ -218,7 +259,7 @@ function map()
 
   -- human base
   human_planet = Planet():setPosition(-20000, -40000):setPlanetRadius(700):setPlanetSurfaceTexture("planets/planet-2.png"):setPlanetAtmosphereTexture("planets/atmosphere.png"):setPlanetAtmosphereColor(1.0,0.1,0.1):setCallSign("Kameiros")
-  human_station = SpaceStation():setPosition(-19000, -42000):setTemplate('Medium Station'):setFaction("Human Navy"):setRotation(random(0, 360)):setCallSign("Kameiros Military Base")
+  human_station = SpaceStation():setPosition(-19000, -42000):setTemplate('Starbase'):setFaction("Starfleet"):setRotation(random(0, 360)):setCallSign("Kameiros Military Base")
   human_station:setCommsFunction(mainBaseComms)
 
 
@@ -232,7 +273,7 @@ function map()
   -- random central nebula
   placeRandomAroundPoint(Nebula, 3, 10000, 40000, 0, 0)
 
-  -- kraylor nebula
+  -- klingon nebula
   placeRandomAroundPoint(Nebula, 6, 2000, 10000, 15000, -50000)
   placeRandomAroundPoint(Nebula, 12, 10000, 15000, 15000, -50000)
 
@@ -308,11 +349,11 @@ function act_1()
 
   missionMessage("act_1", [[Welcome to the ringed gas giant Euripides.
 
-There are a number of mining stations in the rings of Euripides and your job is to police the commercial traffic between these stations and the other stations in the system.
+There are a number of mining stations in the rings of Euripides and your job is to police the commercial traffic in the system.
 
-You have the power to stop and board any freighters in the system and they should comply with your orders but we suspect both smugglers and rebels are present in the system and they may choose to run.
+You have the power to stop and board any freighters and they should comply with your orders but we suspect both smugglers and Federation Sepratists are present in the system and they may choose to run.
 
-Once identified as rebels you may chase down and destroy them but civilian and even smuggler casualties will not be acceptable, whats more, it will likely fan the flames of rebellion.
+Once identified as sepratists you may chase down and destroy them but civilian and even smuggler casualties will not be acceptable, whats more, it will likely fan the flames of rebellion.
 
 Kameiros out.]])
 end
@@ -321,36 +362,57 @@ function init()
 
   current_act = 0
 
+
+  local shipClass = "Constitution Refit"
+  local ship2Class = "Constitution Refit"
+  local ship3Class = "Constitution Refit"
+  if random(0, 100) > 70 then
+    ship2Class = "Prometheus Class"
+    ship3Class = "Defiant Class"
+  else
+    ship2Class = "Defiant Class"
+    ship3Class = "Prometheus Class"
+  end
+
   -- set some default counts based on the variation
+  klingon_ship_names_index = 1
   player_ship_names_index = 1
   player_ship_count = 1
   mining_station_count = 3
-  if (getScenarioVariation() == "2 Crews") then
+  if (getScenarioVariation() == "1 Galaxy Class") then
+    shipClass = "Galaxy Class"
+  elseif (getScenarioVariation() == "1 Constitution Class") then
+    shipClass = "Constitution Refit"
+  elseif (getScenarioVariation() == "1 Defiant Class") then
+    shipClass = "Defiant Class"
+  elseif (getScenarioVariation() == "2 Crews") then
+    shipClass = "Constitution Refit"
     player_ship_count = 2
-    mining_stations = 5
+    mining_station_count = 5
   elseif (getScenarioVariation() == "3 Crews") then
+    shipClass = "Constitution Refit"
     player_ship_count = 3
-    mining_stations = 7
+    mining_station_count = 7
   end
 
   map()
 
   -- player ship
   player_ships = {}
-  human_ship = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Atlantis"):setRotation(random(0, 360)):setJumpDrive(true):setCallSign(player_ship_names[player_ship_names_index])
+  human_ship = PlayerSpaceship():setFaction("Starfleet"):setTemplate(shipClass):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
   human_ship:setPosition(random(-29000, -31000), random(-41000, -43000))
   table.insert(player_ships, human_ship)
   player_ship_names_index = player_ship_names_index + 1
 
   if player_ship_count > 1 then
-    human_ship2 = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3P"):setRotation(random(0, 360)):setJumpDrive(true):setCallSign(player_ship_names[player_ship_names_index])
+    human_ship2 = PlayerSpaceship():setFaction("Starfleet"):setTemplate(ship2Class):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
     human_ship2:setPosition(random(-29000, -31000), random(-41000, -43000))
     table.insert(player_ships, human_ship2)
     player_ship_names_index = player_ship_names_index + 1
   end
 
   if player_ship_count > 2 then
-    human_ship3 = PlayerSpaceship():setFaction("Human Navy"):setTemplate("Phobos M3P"):setRotation(random(0, 360)):setJumpDrive(true):setCallSign(player_ship_names[player_ship_names_index])
+    human_ship3 = PlayerSpaceship():setFaction("Starfleet"):setTemplate(ship3Class):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
     human_ship3:setPosition(random(-29000, -31000), random(-41000, -43000))
     table.insert(player_ships, human_ship3)
     player_ship_names_index = player_ship_names_index + 1
@@ -548,13 +610,12 @@ function generic_behaviour(act)
         -- boarding means waiting for weapons to send away team
         if (trader.comms_data['cargo'] == 'boarding') then
 
-          -- only allow when the attending player has innactive comms
           local player = getPlayerByCallSign(trader.comms_data['stopped_by'])
 
           -- deal with by type
           if (trader.comms_data['type'] == 'trader') then
 
-            player:addCustomButton("Weapons","awayteam","Transport Away Team",function()
+            player:addCustomButton("Weapons","awayteam-"..trader:getCallSign(),"Beam Away Team to "..trader:getCallSign(),function()
               sendAwayTeam(trader, player)
             end)
 
@@ -595,7 +656,7 @@ function generic_behaviour(act)
               player:setSystemHeat("jump", newJumpHeat)
 
             else
-              player:addCustomButton("Weapons","awayteam","Transport Away Team",function()
+              player:addCustomButton("Weapons","awayteam-"..trader:getCallSign(),"Beam Away Team to "..trader:getCallSign(),function()
                 sendAwayTeam(trader, player)
               end)
             end
@@ -630,9 +691,9 @@ function generic_behaviour(act)
             player:setSystemHeat("jump", newJumpHeat)
 
             -- change faction and scan
-            trader:setFaction("Human Rebels")
+            trader:setFaction("Federation Sepratists")
             trader:setCommsFunction(rebelComms)
-            trader:setScannedByFaction("Human Navy", true)
+            trader:setScannedByFaction("Starfleet", true)
 
             -- beef up rebel ships with some weapons
             trader:setShields(55, 55)
@@ -787,7 +848,7 @@ function sendAwayTeam(trader, player)
   end)
 end
 
--- create kraylor fleet and suplement with rebels
+-- create klingon fleet and suplement with rebels
 function act_3()
 
   -- enemy forces modified by
@@ -796,48 +857,43 @@ function act_3()
   -- smugglers_arrived
 
   current_act = 3
-  kraylor_ships = {}
+  klingon_ships = {}
 
-  local kraylor_x = 17769
-  local kraylor_y = -50639
+  local klingon_x = 17769
+  local klingon_y = -50639
 
-  -- 1 big Kraylor, plus 1 smaller per player
-  kraylor_flagship = CpuShip():setFaction("Kraylor"):setTemplate("Starhammer II"):setCallSign("Revenger"):setPosition(kraylor_x, kraylor_y):orderFlyTowards(human_station:getPosition())
-  table.insert(kraylor_ships, kraylor_flagship)
+  -- 1 big Klingons, plus 1 smaller per player
+  klingon_flagship = CpuShip():setFaction("Klingons"):setTemplate("Klingon Kvek"):setPosition(klingon_x, klingon_y):orderAttack(human_station):setCallSign(klingon_ship_names[klingon_ship_names_index])
+  klingon_ship_names_index = klingon_ship_names_index + 1
+  table.insert(klingon_ships, klingon_flagship)
 
-  kraylor_support1 = CpuShip():setFaction("Kraylor"):setTemplate("Piranha F12"):setCallSign("Terix"):setPosition(kraylor_x + random(-5000, 5000), kraylor_y + random(-5000, 5000)):orderFlyTowards(human_station:getPosition())
-  table.insert(kraylor_ships, kraylor_support1)
+  for player_ship_keys, player_ship in ipairs(player_ships) do
 
-  if player_ship_count == 2 then
-
-    kraylor_support2 = CpuShip():setFaction("Kraylor"):setTemplate("Piranha F12"):setCallSign("Scimitar"):setPosition(kraylor_x + random(-5000, 5000), kraylor_y + random(-5000, 5000)):orderFlyTowards(human_station:getPosition())
-    table.insert(kraylor_ships, kraylor_support2)
-
-  elseif player_ship_count == 3 then
-
-    kraylor_support2 = CpuShip():setFaction("Kraylor"):setTemplate("Piranha F12"):setCallSign("Scimitar"):setPosition(kraylor_x + random(-5000, 5000), kraylor_y + random(-5000, 5000)):orderFlyTowards(human_station:getPosition())
-    table.insert(kraylor_ships, kraylor_support2)
-    kraylor_support3 = CpuShip():setFaction("Kraylor"):setTemplate("Piranha F12"):setCallSign("Valdore"):setPosition(kraylor_x + random(-5000, 5000), kraylor_y + random(-5000, 5000)):orderFlyTowards(human_station:getPosition())
-    table.insert(kraylor_ships, kraylor_support3)
-
+    local player_position_x, player_position_y = player_ship:getPosition()
+    local klingon_support = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bloodwing"):setPosition(player_position_x + random(-15000, 15000), player_position_y + random(-15000, 15000)):orderAttack(player_ship):setCallSign(klingon_ship_names[klingon_ship_names_index])
+    klingon_ship_names_index = klingon_ship_names_index + 1
+    table.insert(klingon_ships, klingon_support)
   end
 
   for n=1,rebel_deliveries do
-    CpuShip():setFaction("Kraylor"):setTemplate("WX-Lindworm"):setPosition(kraylor_x + random(-5000, 5000), kraylor_y + random(-5000, 5000)):orderDefendTarget(kraylor_flagship)
+    CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(klingon_x + random(-5000, 25000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
+    klingon_ship_names_index = klingon_ship_names_index + 1
   end
   for n=1,traders_destroyed do
-    CpuShip():setFaction("Kraylor"):setTemplate("MU52 Hornet"):setPosition(kraylor_x + random(-5000, 5000), kraylor_y + random(-5000, 5000)):orderDefendTarget(kraylor_flagship)
+    CpuShip():setFaction("Federation Sepratists"):setTemplate("WX-Lindworm"):setPosition(klingon_x + random(-5000, 25000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
+    klingon_ship_names_index = klingon_ship_names_index + 1
   end
   for n=1,smugglers_arrived do
-    CpuShip():setFaction("Kraylor"):setTemplate("MU52 Hornet"):setPosition(kraylor_x + random(-5000, 5000), kraylor_y + random(-5000, 5000)):orderDefendTarget(kraylor_flagship)
+    CpuShip():setFaction("Federation Sepratists"):setTemplate("MU52 Hornet"):setPosition(klingon_x + random(-5000, 25000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
+    klingon_ship_names_index = klingon_ship_names_index + 1
   end
 
   -- send mission update
-missionMessage("act_3", [[We have intelligence that suggests the Rebels have been funded and supported by the Kralyor!
+missionMessage("act_3", [[We have intelligence that suggests the Rebels have been funded and supported by the Klingon Empire!
 
 They have most likely been using the rebel faction for their own end and we suspect an attack is imminent.
 
-Get yourself back to base as soon as you can, expect a fight when you get there.
+Get yourself back to base as soon as you can, expect a fight when you get here.
 
 Kameiros out.]])
 
@@ -855,7 +911,7 @@ function act_2()
     ambush_ships_count = 0
 
     -- spawn rebel base
-    rebel_base = SpaceStation():setPosition(47000, 44000):setTemplate('Medium Station'):setFaction("Human Rebels"):setRotation(random(0, 360)):setCallSign("Rebel Base")
+    rebel_base = SpaceStation():setPosition(47000, 44000):setTemplate('Klingon Station'):setFaction("Federation Sepratists"):setRotation(random(0, 360)):setCallSign("Rebel Base")
     rebel_base:setCommsFunction(rebelComms)
 
     -- mines
@@ -883,12 +939,6 @@ function missionMessage(message_id, message)
   addDelayedCallback(timers, message_id, 5, function()
 
     for player_ship_keys, player_ship in ipairs(player_ships) do
-    -- human_station:sendCommsMessage(player_ship, message)
-
-    print("missionMessage:")
-    print("Relay  = " .. tostring(player_ship:hasPlayerAtPosition("relayOfficer")))
-    print("Operations  = " .. tostring(player_ship:hasPlayerAtPosition("operationsOfficer")))
-    print("single  = " .. tostring(player_ship:hasPlayerAtPosition("singlePilot")))
 
     if (player_ship:hasPlayerAtPosition("Relay")) then
       player_ship:addCustomMessage("Relay",message_id, message)
@@ -925,7 +975,7 @@ function update(delta)
 
   -- watch for starting act 1
   if (current_act == 0) then
-    act_1() -- only switches act if messages can be sent to all players
+    act_1()
   end
 
   -- act 1
@@ -960,7 +1010,7 @@ function update(delta)
     end
 
     -- if we have ambushs remaning and no ambush ships check for player ships within ambush area
-    if ambush_waves > 0 and ambush_ships_count == 0 then
+    if ambush_waves > 0 and ambush_ships_count <= player_ship_count then
 
       -- iterate player ships and check distance
       for player_ship_keys, player_ship in ipairs(player_ships) do
@@ -982,18 +1032,25 @@ function update(delta)
             ambush_y = ambush_y random(-500, 500)
 
             ambush_ships_count = ambush_ships_count + 2
-            rebel_fighter1 = CpuShip():setFaction("Human Rebels"):setTemplate("MU52 Hornet"):setPosition(ambush_x,ambush_y):orderDefendTarget(rebel_base)
-            rebel_fighter2 = CpuShip():setFaction("Human Rebels"):setTemplate("MU52 Hornet"):setPosition(ambush_x+500,ambush_y+500):orderFlyFormation(rebel_fighter1, 0, 300)
+
+            rebel_fighter1 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x,ambush_y):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+            klingon_ship_names_index = klingon_ship_names_index + 1
+            rebel_fighter2 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y+500):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+            klingon_ship_names_index = klingon_ship_names_index + 1
+
             table.insert(ambush_ships, rebel_fighter1)
             table.insert(ambush_ships, rebel_fighter2)
             if player_ship_count == 2 then
               ambush_ships_count = ambush_ships_count + 1
-              rebel_fighter3 = CpuShip():setFaction("Human Rebels"):setTemplate("MU52 Hornet"):setPosition(ambush_x-500,ambush_y+500):orderFlyFormation(rebel_fighter1, 0, 600)
+              rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+              klingon_ship_names_index = klingon_ship_names_index + 1
               table.insert(ambush_ships, rebel_fighter3)
             elseif player_ship_count == 3 then
               ambush_ships_count = ambush_ships_count + 2
-              rebel_fighter3 = CpuShip():setFaction("Human Rebels"):setTemplate("MU52 Hornet"):setPosition(ambush_x-500,ambush_y+500):orderFlyFormation(rebel_fighter1, 0, 600)
-              rebel_fighter4 = CpuShip():setFaction("Human Rebels"):setTemplate("MU52 Hornet"):setPosition(ambush_x+500,ambush_y-500):orderFlyFormation(rebel_fighter1, 0, -300)
+              rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+              klingon_ship_names_index = klingon_ship_names_index + 1
+              rebel_fighter4 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y-500):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+              klingon_ship_names_index = klingon_ship_names_index + 1
               table.insert(ambush_ships, rebel_fighter3)
               table.insert(ambush_ships, rebel_fighter4)
             end
@@ -1009,16 +1066,16 @@ function update(delta)
   -- act 3
   if (current_act == 3) then
 
-    -- check for no kraylor ships
-    local kraylor_ship_count = 0
-    for kraylor_ship_key, kraylor_ship in ipairs(kraylor_ships) do
-      if kraylor_ship and kraylor_ship:isValid() then
-        kraylor_ship_count = kraylor_ship_count + 1
+    -- check for no klingon ships
+    local klingon_ship_count = 0
+    for klingon_ship_key, klingon_ship in ipairs(klingon_ships) do
+      if klingon_ship and klingon_ship:isValid() then
+        klingon_ship_count = klingon_ship_count + 1
       end
     end
 
-    if kraylor_ship_count == 0 then
-      victory("Human Navy")
+    if klingon_ship_count == 0 then
+      victory("Starfleet")
     end
 
   end

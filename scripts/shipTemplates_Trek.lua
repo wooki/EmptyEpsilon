@@ -50,9 +50,9 @@ template:setTubeDirection(0, 0):setWeaponTubeExclusiveFor(1, "HLVI")
 template:setTubeDirection(180, 0):setWeaponTubeExclusiveFor(1, "Mine")
 
 --   01234  -X-
---    . | | .     0    
+--    . | | .     0
 --    | | | | |     1    Y
---    . | | .     2    
+--    . | | .     2
 
 
 -- AddRoom - X, Y, Length, Height
@@ -116,7 +116,6 @@ template:setJumpDrive(false)
 template:setCloaking(false)
 
 template:setWeaponStorage("Homing", 6)
-template:setWeaponStorage("Nuke", 0)
 template:setWeaponStorage("Mine", 2)
 template:setWeaponStorage("EMP", 1)
 template:setWeaponStorage("HLVI", 0)
@@ -125,9 +124,9 @@ template:setTubeDirection(0, 0):weaponTubeDisallowMissle(3, "Mine")
 template:setTubeDirection(1, 180):setWeaponTubeExclusiveFor(1, "Mine")
 
 --   01234  -X-
---    . . | | |     0    
+--    . . | | |     0
 --    | | | | |     1    Y
---    . . | | |     2    
+--    . . | | |     2
 
 
 -- AddRoom - X, Y, Length, Height
@@ -214,12 +213,12 @@ template:setWeaponStorage("HLVI", 0)
 -- addDoor - X, Y, [Doors on top (true) / on right (false)]
 
 -- ,"Maneuver" +
--- ,"Impulse" + 
+-- ,"Impulse" +
 -- ,"MissileSystem"
 -- ,"RearShield" +
--- , "Warp" + 
--- , "JumpDrive" + 
--- ,"Reactor" + 
+-- , "Warp" +
+-- , "JumpDrive" +
+-- ,"Reactor" +
 -- , "FrontShield" +
 -- , "BeamWeapons"
 
@@ -275,10 +274,10 @@ template:setWarpSpeed(1000)
 template:setJumpDrive(false)
 template:setCloaking(false)
 template:setWeaponStorage("Homing", 20)
-template:setWeaponStorage("Nuke", 4)
+template:setWeaponStorage("Nuke", 0)
 template:setWeaponStorage("Mine", 5)
-template:setWeaponStorage("EMP", 5)
-template:setWeaponStorage("HLVI", 1)
+template:setWeaponStorage("EMP", 10)
+template:setWeaponStorage("HLVI", 0)
 
 
 --    0123456789012  X
@@ -295,24 +294,24 @@ template:setWeaponStorage("HLVI", 1)
 -- addDoor - X, Y, [Doors on top (true) / on right (false)]
 
 -- ,"Maneuver" +
--- ,"Impulse" + 
+-- ,"Impulse" +
 -- ,"MissileSystem"
 -- ,"RearShield" +
--- , "Warp" + 
--- , "JumpDrive" + 
--- ,"Reactor" + 
+-- , "Warp" +
+-- , "JumpDrive" +
+-- ,"Reactor" +
 -- , "FrontShield" +
 -- , "BeamWeapons"
 
 template:addRoomSystem(2, 0, 3, 1 ,"Warp"); -- Warp (3 across)
-template:addRoomSystem(6, 0, 1, 2 ,"MissileSystem"); 
-template:addRoomSystem(6, 3, 1, 2 ,"BeamWeapons"); 
+template:addRoomSystem(6, 0, 1, 2 ,"MissileSystem");
+template:addRoomSystem(6, 3, 1, 2 ,"BeamWeapons");
 template:addRoomSystem(3, 1, 1, 3 ,"Maneuver"); -- Maneuver (3 down)
-template:addRoomSystem(2, 1, 1, 3 ,"Impulse"); 
-template:addRoomSystem(0, 2, 2, 1,"RearShield"); 
+template:addRoomSystem(2, 1, 1, 3 ,"Impulse");
+template:addRoomSystem(0, 2, 2, 1,"RearShield");
 template:addRoomSystem(2, 4, 3, 1 ,"JumpDrive");
-template:addRoomSystem(5, 2, 3, 1 ,"Reactor");  
-template:addRoomSystem(10, 2, 2, 1 ,"FrontShield"); 
+template:addRoomSystem(5, 2, 3, 1 ,"Reactor");
+template:addRoomSystem(10, 2, 2, 1 ,"FrontShield");
 
 
 template:addRoom(1, 1, 1, 1);
@@ -436,7 +435,7 @@ template = ShipTemplate():setName("Klingon Bloodwing"):setClass("Klingon", "Crui
 template:setRadarTrace("radar_st-kli.png")
 template:setDescription([[Klingon]])
 template:setHull(90)
-template:setShields(200)
+template:setShields(150)
 template:setSpeed(50, 15, 15)
 template:setTubes(3, 15.0)
 template:setWeaponStorage("Homing", 10)

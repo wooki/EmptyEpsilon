@@ -155,9 +155,9 @@ function mainMenu()
           -- rebels who are close will always reveal
           if comms_target.comms_data['type'] == 'rebel' and range < 10000 then
             -- change faction and scan
-              comms_target:setFaction("Human Rebels")
+              comms_target:setFaction("Federation Sepratists")
               comms_target:setCommsFunction(rebelComms)
-              comms_target:setScannedByFaction("Human Navy", true)
+              comms_target:setScannedByFaction("Starfleet", true)
 
               -- beef up rebel ships with some weapons
               comms_target:setShields(55, 55)
