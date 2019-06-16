@@ -434,6 +434,10 @@ function init()
 
   current_act = 0
 
+  addGMFunction("Act 1", act_1)
+  addGMFunction("Act 2", act_2)
+  addGMFunction("Act 3", act_3)
+
 
   local shipClass = "Constitution Refit"
   local ship2Class = "Constitution Refit"
@@ -908,8 +912,14 @@ function sendAwayTeam(trader, player)
   trader.comms_data['cargo'] = 'checking'
 
   local delay = math.random(10, 60)
+  local delayEstimate = math.floor(delay + math.random(-10, 10))
   local checking_message_id = 'checking-message-' .. tostring(math.random(1, 99999))
+
+  player:addCustomInfo("Weapons","awayteamestimate","Mission estimate " .. tostring(delayEstimate) .. " seconds.")
+
   addDelayedCallback(timers, checking_message_id, delay, function()
+
+    player:removeCustom("Weapons","awayteamestimate")
 
     if (trader.comms_data['type'] == 'trader') then
 
