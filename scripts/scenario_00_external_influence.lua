@@ -153,6 +153,77 @@ function commsGamble()
   end
 end
 
+weapon_cost = {
+    Homing = 2,
+    HVLI = 2,
+    Mine = 2,
+    Nuke = 15,
+    EMP = 10
+}
+
+function getWeaponCost(weapon)
+    return math.ceil(weapon_cost[weapon])
+end
+
+function handleWeaponRestock(player, weapon)
+    if not player:isDocked(comms_target) then setCommsMessage("You need to stay docked for that action."); return end
+    local points_per_item = getWeaponCost(weapon)
+    local item_amount = math.floor(player:getWeaponStorageMax(weapon) - player:getWeaponStorage(weapon))
+    if item_amount <= 0 then
+        if weapon == "Nuke" then
+            setCommsMessage("All nukes are charged and primed for destruction.");
+        else
+            setCommsMessage("Sorry, sir, but you are as fully stocked as I can allow.");
+        end
+        addCommsReply("Back", mainMenu)
+    else
+        if not player:takeReputationPoints(points_per_item * item_amount) then
+            setCommsMessage("Not enough reputation.")
+            return
+        end
+        player:setWeaponStorage(weapon, player:getWeaponStorage(weapon) + item_amount)
+        if player:getWeaponStorage(weapon) == player:getWeaponStorageMax(weapon) then
+            setCommsMessage("You are fully loaded and ready to explode things.")
+        else
+            setCommsMessage("We generously resupplied you with some " .. weapon .. " charges.\nPut them to good use.")
+        end
+        addCommsReply("Back", mainBaseCommsStock)
+    end
+end
+
+function mainBaseCommsStock()
+    -- Handle communications while docked with this station.
+    setCommsMessage("Good day, officer!\nWhat can we do for you today?")
+
+    if comms_source:getWeaponStorageMax("Homing") > 0 then
+        addCommsReply("Do you have spare homing missiles for us? ("..getWeaponCost("Homing").."rep each)", function()
+            handleWeaponRestock(comms_source, "Homing")
+        end)
+    end
+    if comms_source:getWeaponStorageMax("HVLI") > 0 then
+        addCommsReply("Can you restock us with HVLI? ("..getWeaponCost("HVLI").."rep each)", function()
+            handleWeaponRestock(comms_source, "HVLI")
+        end)
+    end
+    if comms_source:getWeaponStorageMax("Mine") > 0 then
+        addCommsReply("Please re-stock our mines. ("..getWeaponCost("Mine").."rep each)", function()
+            handleWeaponRestock(comms_source, "Mine")
+        end)
+    end
+    if comms_source:getWeaponStorageMax("Nuke") > 0 then
+        addCommsReply("Can you supply us with some nukes? ("..getWeaponCost("Nuke").."rep each)", function()
+            handleWeaponRestock(comms_source, "Nuke")
+        end)
+    end
+    if comms_source:getWeaponStorageMax("EMP") > 0 then
+        addCommsReply("Please re-stock our EMP missiles. ("..getWeaponCost("EMP").."rep each)", function()
+            handleWeaponRestock(comms_source, "EMP")
+        end)
+    end
+
+    addCommsReply("Back", mainBaseComms)
+end
+
 function mainBaseComms()
 
   setCommsMessage("Go ahead "..comms_source:getCallSign().."...")
@@ -176,6 +247,7 @@ Traders destroyed: ]]..traders_destroyed..[[
   if comms_source:isDocked(comms_target) then
       addCommsReply("So we're docked huh?", function()
         setCommsMessage("That certainly appears to be the case.")
+        addCommsReply("Visit the Quartermaster", mainBaseCommsStock)
         addCommsReply("Find somewhere to drink", function()
           if (random(1, 10) > 3) then
             setCommsMessage("You find a quiet little bar on deck "..math.floor(random(11, 19)).." and keep yourselves to yourselves.")
@@ -201,7 +273,7 @@ Traders destroyed: ]]..traders_destroyed..[[
             for n=1,comms_source:getWaypointCount() do
                 addCommsReply("WP" .. n, function()
                     if comms_source:takeReputationPoints(80) then
-                        ship = CpuShip():setFactionId(comms_target:getFactionId()):setPosition(comms_target:getPosition()):setTemplate("Adder MK6"):setScanned(true):orderDefendLocation(comms_source:getWaypoint(n))
+                        ship = CpuShip():setFactionId(comms_target:getFactionId()):setPosition(comms_target:getPosition()):setTemplate("Intrepid Class"):setScanned(true):orderDefendLocation(comms_source:getWaypoint(n))
                         setCommsMessage("Good call "..comms_source:getCallSign()..", we have dispatched " .. ship:getCallSign() .. " to assist at WP" .. n);
                         addCommsReply("Back", mainBaseComms)
                     else
@@ -522,6 +594,8 @@ function generic_behaviour(act)
       updateAllStationFriendlyness(trader.comms_data['type'])
 
       for culprit_key, culprit in ipairs(culprits) do
+
+        playSoundFile("chirp.ogg")
         human_station:sendCommsMessage(culprit, message);
 
         if reward > 0 then
@@ -643,6 +717,7 @@ function generic_behaviour(act)
               trader:setImpulseMaxSpeed(random(80, 100))
               trader:orderFlyTowards(run_x, run_y)
 
+              player_ship:addCustomMessage("Relay",message_id, message)
               player:addCustomMessage("Relay","smugglerrun","Away team reports the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign().." you may persue when ready.")
               player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign()..".", "Red")
 
@@ -679,6 +754,7 @@ function generic_behaviour(act)
             -- make it fast as well player ships max is 90 (except fighters)
             trader:setImpulseMaxSpeed(random(80, 100))
 
+            player_ship:addCustomMessage("Relay",message_id, message)
             player:addCustomMessage("Relay","rebelrun","Away team reports the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign().." you may persue when ready.")
             player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign()..".", "Red")
 
@@ -743,7 +819,6 @@ function generic_behaviour(act)
           -- check for rebel delivery
           if (trader.comms_data['type'] == 'rebel') then
             rebel_deliveries = rebel_deliveries + 1 -- base should be able to report this
-
           else
             if (trader.comms_data['type'] == 'smuggler') then
               smugglers_arrived = smugglers_arrived + 1
@@ -829,6 +904,7 @@ end
 
 function sendAwayTeam(trader, player)
 
+  playSoundFile("transporter.ogg")
   trader.comms_data['cargo'] = 'checking'
 
   local delay = math.random(10, 60)
@@ -837,12 +913,14 @@ function sendAwayTeam(trader, player)
 
     if (trader.comms_data['type'] == 'trader') then
 
+      playSoundFile("chirp.ogg")
       trader.comms_data['cargo'] = 'ok'
       player:addCustomMessage("Relay","awayteamdone","Away team reports no contraband aboard the "..trader:getCallSign()..", you may clear them to leave.")
       player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." has no contraband, they have returning to the "..player:getCallSign()..".", "White")
 
     elseif (trader.comms_data['type'] == 'smuggler') then
 
+        playSoundFile("chirp.ogg")
         trader.comms_data['cargo'] = 'contraband'
         player:addCustomMessage("Relay","awayteamdone","Away team reports we have found contraband aboard the "..trader:getCallSign()..
         [[, we have taken their captain into custody and attached a inhibitor to their ship, clear them to head home when you are ready.]])
@@ -950,12 +1028,15 @@ function missionMessage(message_id, message)
     -- print("single  = " .. tostring(player_ship:hasPlayerAtPosition("singlePilot")))
 
     if (player_ship:hasPlayerAtPosition("Relay")) then
+      playSoundFile("chirp.ogg")
       player_ship:addCustomMessage("Relay",message_id, message)
       player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
     elseif (player_ship:hasPlayerAtPosition("Operations")) then
+      playSoundFile("chirp.ogg")
       player_ship:addCustomMessage("Operations",message_id, message)
       player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
     elseif (player_ship:hasPlayerAtPosition("single")) then
+      playSoundFile("chirp.ogg")
       player_ship:addCustomMessage("single",message_id, message)
       player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
     else
@@ -1024,6 +1105,7 @@ function update(delta)
         if distance(player_ship, rebel_base) < 20000 then
 
           -- spawn an ambush
+          playSoundFile("decloak.ogg")
           if ambush_ships_count == 0 then
             ambush_waves = ambush_waves -1
             local ambush_x = 37794

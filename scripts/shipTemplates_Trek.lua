@@ -361,7 +361,7 @@ template:addDoor(6, 4,false);
 -- Non Player ships (so far)
 
 template = ShipTemplate():setName("Intrepid Class"):setClass("Frigate", "Cruiser"):setModel("intrepid")
-template:setRadarTrace("radar_st-fedship.png")
+template:setRadarTrace("radar_st-intrepid.png")
 template:setDescription([[Smaller Starship with moving nacelles. USS Intrepid & USS Voyager]])
 template:setHull(70)
 template:setShields(60,60)
