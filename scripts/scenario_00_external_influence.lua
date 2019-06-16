@@ -402,12 +402,14 @@ function init()
   human_ship = PlayerSpaceship():setFaction("Starfleet"):setTemplate(shipClass):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
   human_ship:setPosition(random(-29000, -31000), random(-41000, -43000))
   table.insert(player_ships, human_ship)
+  player_ship1 = human_ship
   player_ship_names_index = player_ship_names_index + 1
 
   if player_ship_count > 1 then
     human_ship2 = PlayerSpaceship():setFaction("Starfleet"):setTemplate(ship2Class):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
     human_ship2:setPosition(random(-29000, -31000), random(-41000, -43000))
     table.insert(player_ships, human_ship2)
+    player_ship2 = human_ship2
     player_ship_names_index = player_ship_names_index + 1
   end
 
@@ -415,6 +417,7 @@ function init()
     human_ship3 = PlayerSpaceship():setFaction("Starfleet"):setTemplate(ship3Class):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
     human_ship3:setPosition(random(-29000, -31000), random(-41000, -43000))
     table.insert(player_ships, human_ship3)
+    player_ship3 = human_ship3
     player_ship_names_index = player_ship_names_index + 1
   end
 
@@ -616,6 +619,7 @@ function generic_behaviour(act)
           if (trader.comms_data['type'] == 'trader') then
 
             player:addCustomButton("Weapons","awayteam-"..trader:getCallSign(),"Beam Away Team to "..trader:getCallSign(),function()
+              player:removeCustom("awayteam-"..trader:getCallSign())
               sendAwayTeam(trader, player)
             end)
 
@@ -657,6 +661,7 @@ function generic_behaviour(act)
 
             else
               player:addCustomButton("Weapons","awayteam-"..trader:getCallSign(),"Beam Away Team to "..trader:getCallSign(),function()
+                player:removeCustom("awayteam-"..trader:getCallSign())
                 sendAwayTeam(trader, player)
               end)
             end
@@ -824,7 +829,6 @@ end
 
 function sendAwayTeam(trader, player)
 
-  player:removeCustom("awayteam")
   trader.comms_data['cargo'] = 'checking'
 
   local delay = math.random(10, 60)
@@ -940,6 +944,11 @@ function missionMessage(message_id, message)
 
     for player_ship_keys, player_ship in ipairs(player_ships) do
 
+    -- print("missionMessage:")
+    -- print("Relay  = " .. tostring(player_ship:hasPlayerAtPosition("relayOfficer")))
+    -- print("Operations  = " .. tostring(player_ship:hasPlayerAtPosition("operationsOfficer")))
+    -- print("single  = " .. tostring(player_ship:hasPlayerAtPosition("singlePilot")))
+
     if (player_ship:hasPlayerAtPosition("Relay")) then
       player_ship:addCustomMessage("Relay",message_id, message)
       player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
@@ -994,8 +1003,6 @@ function update(delta)
   -- act 2
   if (current_act == 2) then
 
-    print("ACT 2")
-
     -- check if the rebel station has been destroyed
     if not rebel_base:isValid() then
       act_3()
@@ -1033,23 +1040,23 @@ function update(delta)
 
             ambush_ships_count = ambush_ships_count + 2
 
-            rebel_fighter1 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x,ambush_y):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+            rebel_fighter1 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x,ambush_y):orderAttack(player_ship1):setCallSign(klingon_ship_names[klingon_ship_names_index])
             klingon_ship_names_index = klingon_ship_names_index + 1
-            rebel_fighter2 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y+500):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+            rebel_fighter2 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y+500):orderAttack(player_ship1):setCallSign(klingon_ship_names[klingon_ship_names_index])
             klingon_ship_names_index = klingon_ship_names_index + 1
 
             table.insert(ambush_ships, rebel_fighter1)
             table.insert(ambush_ships, rebel_fighter2)
             if player_ship_count == 2 then
               ambush_ships_count = ambush_ships_count + 1
-              rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+              rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderAttack(player_ship2):setCallSign(klingon_ship_names[klingon_ship_names_index])
               klingon_ship_names_index = klingon_ship_names_index + 1
               table.insert(ambush_ships, rebel_fighter3)
             elseif player_ship_count == 3 then
               ambush_ships_count = ambush_ships_count + 2
-              rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+              rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderAttack(player_ship3):setCallSign(klingon_ship_names[klingon_ship_names_index])
               klingon_ship_names_index = klingon_ship_names_index + 1
-              rebel_fighter4 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y-500):orderDefendTarget(rebel_base):setCallSign(klingon_ship_names[klingon_ship_names_index])
+              rebel_fighter4 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y-500):orderAttack(player_ship3):setCallSign(klingon_ship_names[klingon_ship_names_index])
               klingon_ship_names_index = klingon_ship_names_index + 1
               table.insert(ambush_ships, rebel_fighter3)
               table.insert(ambush_ships, rebel_fighter4)

@@ -123,7 +123,7 @@ function mainMenu()
 
   else -- is neither running or stopped
 
-    setCommsMessage(comms_target.comms_data['type'].."/"..tostring(comms_target.comms_data['cargo']).." > ".."This is "..comms_target:getCallSign()..", what do you want "..player:getCallSign().."?")
+    setCommsMessage("This is "..comms_target:getCallSign()..", what do you want "..player:getCallSign().."?")
 
     if (comms_target.comms_data['cargo'] ~= nil and (comms_target.comms_data['cargo'] == 'ok-rewarded' or comms_target.comms_data['cargo'] == 'ok' or comms_target.comms_data['cargo'] == 'contraband')) then
 

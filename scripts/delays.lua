@@ -5,9 +5,7 @@ function tick(timers, delta)
     -- iterate timers and reduce by delta amount, any that hit zero are called and removed
     for name, timer in ipairs(timers) do
       if (timer and timer['delay'] > 0) then
-       print("timer=" .. timer['name'])
-      	timer['delay'] = timer['delay'] - delta
-      	print("timer " .. timer['name'] .. " = " .. timer['delay'])
+       	timer['delay'] = timer['delay'] - delta
       	if (timer['delay'] <= 0) then
       		timer['callback']()
       		timers[timer['name']] = nil

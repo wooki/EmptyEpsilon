@@ -30,7 +30,7 @@ template:setRadarTrace("radar_st-fed.png")
 template = ShipTemplate():setName("Defiant Class"):setClass("Frigate", "Cruiser: Anti-fighter"):setModel("Defiant"):setType("playership")
 template:setDescription([[Small, Fast and Armed to the teeth. The Defiant Class starship was instrumental in the Dominon Wars at DS9 ]])
 --                 ID Number, Arc, Dir, Range, CycleTime, Dmg
-template:setRadarTrace("radar_st-fed.png")
+template:setRadarTrace("radar_st-defiant.png")
 template:setBeam(0, 40, 0, 700.0, 0.8, 4)
 template:setBeam(1, 40, 180, 500.0, 2.0, 5)
 
@@ -101,7 +101,7 @@ template:addDoor(1, 2, true);
 -- ================
 template = ShipTemplate():setName("Constitution Refit"):setClass("Frigate", "Cruiser"):setModel("EnterpriseA"):setType("playership")
 template:setDescription([[Upgraded Constitution Class Starship which was made famous by the crew of the Enterprise A]])
-template:setRadarTrace("radar_st-fed.png")
+template:setRadarTrace("radar_st-fedship.png")
 --template = ShipTemplate():setName("TSN Scout"):setModel("artemisscout"):setType("playership")
 --                 ID Number, Arc, Dir, Range, CycleTime, Dmg
 
@@ -178,7 +178,7 @@ template:addRoomSystem(4, 2, 1, 1,"MissileSystem");
 
 template = ShipTemplate():setName("Galaxy Class"):setClass("Corvette", "Cruiser"):setModel("EnterpriseD"):setType("playership")
 template:setDescription([[A large starship with over 1000 crew members]])
-template:setRadarTrace("radar_st-fed.png")
+template:setRadarTrace("radar_st-galaxy.png")
 --                 ID Number, Arc, Dir, Range, CycleTime, Dmg
 template:setBeam(0, 180, 0, 800.0, 4.0, 10)
 template:setBeam(1, 180,  180, 600.0, 4.0, 10)
@@ -261,7 +261,7 @@ template:addDoor(7, 3, true);
 
 template = ShipTemplate():setName("Prometheus Class"):setClass("Corvette", "Cruiser"):setModel("Prometheus"):setType("playership")
 template:setDescription([[A large starship that can split into 3 different warp capable ships. All decks have holographic generators.]])
-template:setRadarTrace("radar_st-fed.png")
+template:setRadarTrace("radar_st-fedship.png")
 --                 ID Number, Arc, Dir, Range, CycleTime, Dmg
 template:setBeam(0, 120, 0, 800.0, 6.0, 8)
 template:setBeam(1, 120,  180, 700.0, 6.0, 8)
@@ -361,7 +361,7 @@ template:addDoor(6, 4,false);
 -- Non Player ships (so far)
 
 template = ShipTemplate():setName("Intrepid Class"):setClass("Frigate", "Cruiser"):setModel("intrepid")
-template:setRadarTrace("radar_st-fed.png")
+template:setRadarTrace("radar_st-fedship.png")
 template:setDescription([[Smaller Starship with moving nacelles. USS Intrepid & USS Voyager]])
 template:setHull(70)
 template:setShields(60,60)
@@ -405,7 +405,7 @@ template:setBeam(3, 90,  270, 1000.0, 5.0, 10)
 
 
 template = ShipTemplate():setName("Klingon Bird of Death"):setClass("Klingon", "Cruiser"):setModel("BirdOfDeath")
-template:setRadarTrace("radar_st-kli.png")
+template:setRadarTrace("radar_st-klingonship.png")
 template:setDescription([[Klingon]])
 template:setHull(90)
 template:setShields(200)
@@ -419,20 +419,20 @@ template:setBeam(1, 80,  180, 400.0, 8.0, 6)
 
 
 template = ShipTemplate():setName("Klingon Kvek"):setClass("Klingon", "Cruiser"):setModel("Kvek")
-template:setRadarTrace("radar_st-kli.png")
+template:setRadarTrace("radar_st-klingonship.png")
 template:setDescription([[Klingon]])
-template:setHull(90)
+template:setHull(120)
 template:setShields(200)
 template:setSpeed(50, 15, 15)
 template:setTubes(3, 15.0)
-template:setWeaponStorage("Homing", 10)
+template:setWeaponStorage("Homing", 18)
 template:setTubeDirection(1, 1):setWeaponTubeExclusiveFor(1, "Homing")
 template:setTubeDirection(2,-1):setWeaponTubeExclusiveFor(2, "Homing")
 template:setBeam(0, 80, 0, 800.0, 7.0, 8)
 template:setBeam(1, 80,  180, 500.0, 7.0, 8)
 
 template = ShipTemplate():setName("Klingon Bloodwing"):setClass("Klingon", "Cruiser"):setModel("Bloodwing")
-template:setRadarTrace("radar_st-kli.png")
+template:setRadarTrace("radar_st-klingonship.png")
 template:setDescription([[Klingon]])
 template:setHull(90)
 template:setShields(150)
@@ -445,7 +445,7 @@ template:setBeam(0, 80, 0, 800.0, 7.0, 8)
 template:setBeam(1, 80,  180, 600.0, 7.0, 8)
 
 template = ShipTemplate():setName("Klingon Vorcha"):setClass("Klingon", "Cruiser"):setModel("Vorcha")
-template:setRadarTrace("radar_st-kli.png")
+template:setRadarTrace("radar_st-klingonship.png")
 template:setDescription([[Klingon]])
 template:setHull(90)
 template:setShields(200)
@@ -459,7 +459,7 @@ template:setBeam(1, 60,  180, 500.0, 8.0, 10)
 
 
 template = ShipTemplate():setName("Klingon Bird Of Prey"):setClass("Klingon", "Cruiser"):setModel("KlingBirdOfPrey")
-template:setRadarTrace("radar_st-kli.png")
+template:setRadarTrace("radar_st-birdofprey.png")
 template:setDescription([[Klingon]])
 template:setHull(80)
 template:setShields(90)
