@@ -311,6 +311,8 @@ function map()
   -- create two additonal hub stations
   trade_hub2 = SpaceStation():setPosition(-1847, 23224):setTemplate('Regula Station'):setFaction("Independent"):setRotation(random(0, 360)):setCallSign("Amphipolis Refuel Station")
   trade_hub3 = SpaceStation():setPosition(29009, 30008):setTemplate('Regula Station'):setFaction("Independent"):setRotation(random(0, 360)):setCallSign("Euripides Weather Station")
+  trade_hub2:setRadarTrace("radartrace_smallstation.png")
+  trade_hub3:setRadarTrace("radartrace_smallstation.png")
   trade_hub2.comms_data = trade_hub_comms
   trade_hub3.comms_data = trade_hub_comms
   trade_hub2:setCommsScript('comms_station_unfriendly.lua')
@@ -721,7 +723,7 @@ function generic_behaviour(act)
               trader:setImpulseMaxSpeed(random(80, 100))
               trader:orderFlyTowards(run_x, run_y)
 
-              player_ship:addCustomMessage("Relay",message_id, message)
+              player:addCustomMessage("Relay",message_id, message)
               player:addCustomMessage("Relay","smugglerrun","Away team reports the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign().." you may persue when ready.")
               player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign()..".", "Red")
 
@@ -758,7 +760,7 @@ function generic_behaviour(act)
             -- make it fast as well player ships max is 90 (except fighters)
             trader:setImpulseMaxSpeed(random(80, 100))
 
-            player_ship:addCustomMessage("Relay",message_id, message)
+            player:addCustomMessage("Relay",message_id, message)
             player:addCustomMessage("Relay","rebelrun","Away team reports the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign().." you may persue when ready.")
             player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign()..".", "Red")
 
@@ -911,15 +913,15 @@ function sendAwayTeam(trader, player)
   playSoundFile("transporter.ogg")
   trader.comms_data['cargo'] = 'checking'
 
-  local delay = math.random(10, 60)
+  local delay = math.random(20, 90)
   local delayEstimate = math.floor(delay + math.random(-10, 10))
-  local checking_message_id = 'checking-message-' .. tostring(math.random(1, 99999))
+  local checking_message_id = 'checking-message' .. tostring(math.random(1, 99999))
 
-  player:addCustomInfo("Weapons","awayteamestimate","Mission estimate " .. tostring(delayEstimate) .. " seconds.")
+  player:addCustomInfo("Weapons","awayteamestimate","Mission estimate " .. tostring(delayEstimate) .. " seconds")
 
   addDelayedCallback(timers, checking_message_id, delay, function()
 
-    player:removeCustom("Weapons","awayteamestimate")
+    player:removeCustom("awayteamestimate")
 
     if (trader.comms_data['type'] == 'trader') then
 
