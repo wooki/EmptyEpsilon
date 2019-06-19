@@ -646,6 +646,9 @@ function generic_behaviour(act)
   -- check each trader and update missions
   for key, trader in ipairs(traders) do
 
+    -- debug trader
+    -- print(table_print(trader.comms_data))
+
     if (not trader.comms_data['avoiding']) then
 
       if (trader.comms_data['state'] == 'running') then
@@ -723,7 +726,6 @@ function generic_behaviour(act)
               trader:setImpulseMaxSpeed(random(80, 100))
               trader:orderFlyTowards(run_x, run_y)
 
-              player:addCustomMessage("Relay",message_id, message)
               player:addCustomMessage("Relay","smugglerrun","Away team reports the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign().." you may persue when ready.")
               player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign()..".", "Red")
 

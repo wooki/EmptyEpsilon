@@ -76,9 +76,9 @@ function willRun(trader)
   local rnd = random(1, 10)
 
   if (trader.comms_data['type'] == 'trader') then
-    return (rnd > 7)
+    return (rnd > 3)
   elseif (trader.comms_data['type'] == 'smuggler') then
-    return (rnd > 5)
+    return (rnd > 3)
   elseif (trader.comms_data['type'] == 'rebel') then
     return (rnd > 3)
   else
