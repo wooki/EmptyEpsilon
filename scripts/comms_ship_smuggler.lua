@@ -41,32 +41,30 @@ function stoppedMenu()
 
     setCommsMessage("Away team report they are aboard the "..comms_target:getCallSign().." and conduction a cargo inspection, please be patient.");
 
+  elseif (comms_target.comms_data['cargo'] == 'ok' or comms_target.comms_data['cargo'] == 'contraband') then
+    addCommsReply("Go on your way "..comms_target:getCallSign()..", "..player:getCallSign().." out", function()
+
+      -- reward the player for sending them on their way
+      if (comms_target.comms_data['cargo'] == 'ok') then
+        comms_target:setImpulseMaxSpeed(random(70, 75))
+        comms_target.comms_data['cargo'] = 'ok-rewarded'
+        player:addReputationPoints(12)
+        player:addToShipLog("[REPUTATION] Trader cargo checked, reward 12 reputation.", "Green")
+      elseif (comms_target.comms_data['cargo'] == 'contraband') then
+        comms_target:setImpulseMaxSpeed(random(60, 65))
+        comms_target.comms_data['cargo'] = 'ok-rewarded'
+        player:addReputationPoints(24)
+        player:addToShipLog("[REPUTATION] Smuggler cargo checked, reward 24 reputation.", "Green")
+      end
+
+      comms_target.comms_data['state'] = comms_target.comms_data['original_state']
+      comms_target.comms_data['stopped_by'] = nil
+      comms_target:orderFlyTowards(comms_target.comms_data['destination']:getPosition())
+
+      setCommsMessage("Thank you "..player:getCallSign()..", "..comms_target:getCallSign().." out");
+
+    end)
   end
-
-  -- always allow them to Continue
-  addCommsReply("Go on your way "..comms_target:getCallSign()..", "..player:getCallSign().." out", function()
-
-    -- reward the player for sending them on their way
-    if (comms_target.comms_data['cargo'] == 'ok') then
-      comms_target:setImpulseMaxSpeed(random(70, 75))
-      comms_target.comms_data['cargo'] = 'ok-rewarded'
-      player:addReputationPoints(12)
-      player:addToShipLog("[REPUTATION] Trader cargo checked, reward 12 reputation.", "Green")
-    elseif (comms_target.comms_data['cargo'] == 'contraband') then
-      comms_target:setImpulseMaxSpeed(random(60, 65))
-      comms_target.comms_data['cargo'] = 'ok-rewarded'
-      player:addReputationPoints(24)
-      player:addToShipLog("[REPUTATION] Smuggler cargo checked, reward 24 reputation.", "Green")
-    end
-
-    comms_target.comms_data['state'] = comms_target.comms_data['original_state']
-    comms_target.comms_data['stopped_by'] = nil
-    -- comms_target.comms_data['cargo'] = nil
-    comms_target:orderFlyTowards(comms_target.comms_data['destination']:getPosition())
-
-    setCommsMessage("Thank you "..player:getCallSign()..", "..comms_target:getCallSign().." out");
-
-  end)
 
 end
 
@@ -75,19 +73,20 @@ function willRun(trader)
 
   local rnd = random(1, 10)
 
-  if (trader.comms_data['type'] == 'trader') then
-    return (rnd > 3)
-  elseif (trader.comms_data['type'] == 'smuggler') then
-    return (rnd > 3)
+  if (trader.comms_data['type'] == 'smuggler') then
+    return (rnd > 5)
   elseif (trader.comms_data['type'] == 'rebel') then
-    return (rnd > 3)
+    return true -- rebels always run
   else
-    return false
+    return false -- traders always stop
   end
 end
 
 
 function mainMenu()
+
+  -- debug trader
+  print(table_print(comms_target.comms_data))
 
   -- range is important
   range = distance(comms_target, player)
@@ -123,13 +122,14 @@ function mainMenu()
 
   else -- is neither running or stopped
 
-    setCommsMessage("This is "..comms_target:getCallSign()..", what do you want "..player:getCallSign().."?")
-
     if (comms_target.comms_data['cargo'] ~= nil and (comms_target.comms_data['cargo'] == 'ok-rewarded' or comms_target.comms_data['cargo'] == 'ok' or comms_target.comms_data['cargo'] == 'contraband')) then
 
       setCommsMessage("You've already checked us "..player:getCallSign()..", give us a break!");
 
     else
+
+      setCommsMessage("This is "..comms_target:getCallSign()..", what do you want "..player:getCallSign().."?")
+
       -- request stop
       addCommsReply("Hold position while we approach.", function()
 
@@ -152,29 +152,21 @@ function mainMenu()
 
           local range = distance(comms_target, player)
 
-          -- rebels who are close will always reveal
-          if comms_target.comms_data['type'] == 'rebel' and range < 10000 then
-            -- change faction and scan
-              comms_target:setFaction("Federation Sepratists")
-              comms_target:setCommsFunction(rebelComms)
-              comms_target:setScannedByFaction("Starfleet", true)
+          -- change faction and scan
+          comms_target:setFaction("Federation Sepratists")
+          comms_target:setCommsFunction(rebelComms)
+          comms_target:setScannedByFaction("Starfleet", true)
 
-              -- beef up rebel ships with some weapons
-              comms_target:setShields(55, 55)
-              comms_target:setBeamWeapon(0, 45, 0, 1000, 8, 6)
-              comms_target:setWeaponTubeCount(1) -- Amount of torpedo tubes, and loading time of the tubes.
-              comms_target:setWeaponTubeDirection(0, 0):setWeaponTubeExclusiveFor(0, "HVLI")
-              comms_target:setWeaponStorageMax("HVLI", 5)
-              comms_target:setWeaponStorage("HVLI", random(1, 5))
+          -- beef up rebel ships with some weapons
+          comms_target:setShields(55, 55)
+          comms_target:setBeamWeapon(0, 45, 0, 1000, 8, 6)
+          comms_target:setWeaponTubeCount(1) -- Amount of torpedo tubes, and loading time of the tubes.
+          comms_target:setWeaponTubeDirection(0, 0):setWeaponTubeExclusiveFor(0, "HVLI")
+          comms_target:setWeaponStorageMax("HVLI", 5)
+          comms_target:setWeaponStorage("HVLI", random(1, 5))
+          comms_target:orderAttack(player)
 
-              comms_target.comms_data['loading'] = true
-              comms_target.comms_data['loaded'] = false
-              comms_target:orderAttack(player)
-
-              setCommsMessage("Long live the Rebellion!");
-          else
-            setCommsMessage("Go to hell "..player:getCallSign().."! We're just trying to make a living!");
-          end
+          setCommsMessage("Long live the Rebellion!");
 
         else
           -- sensibly stop for you

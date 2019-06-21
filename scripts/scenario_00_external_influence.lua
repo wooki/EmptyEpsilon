@@ -541,7 +541,7 @@ function updateStationFriendlyness(type, station)
   if (type == "smuggler") then -- often worse!
     change = random(-30, -10)
   elseif (type == "rebel") then -- sometimes positive
-    change = random(-20, 20)
+    change = random(-10, 20)
   end
 
   station.comms_data['friendlyness'] = station.comms_data['friendlyness'] + math.floor(change)
@@ -567,8 +567,6 @@ function generic_behaviour(act)
   -- watch for destroyed traders (replace and punish/reward)
   for key, trader in ipairs(traders) do
     if not (trader and trader:isValid()) then
-
-      traders[key] = nil -- remove from next pass
 
       -- if it was being chased blame that player, otherwise ALL players
       -- in future could replace with closest
@@ -621,6 +619,16 @@ function generic_behaviour(act)
     end
   end
 
+  -- traders not valid can be removed here (they are rewarded/punished in loop above)
+  traders = ArrayRemove(traders, function(t, i, j)
+    if not t[i]:isValid() then
+      return false
+    else
+      return true
+    end
+  end)
+
+
   -- watch for destroyed mining stations and adjust count and reindex or just end game
   for key, mining_station in ipairs(mining_stations) do
     if not (mining_station:isValid()) then
@@ -640,25 +648,48 @@ function generic_behaviour(act)
     globalMessage(human_station:getCallSign().." was destroyed, humans lose!")
   end
 
-  -- TODO: watch for no human players
-  --
+  -- watch for no human players
+  local playersAlive = 0
+  for player_ship_keys, player_ship in ipairs(player_ships) do
+    if player_ship:isValid() then
+      playersAlive = playersAlive + 1
+    end
+  end
+
+  if playersAlive <= 0 then
+    victory("Klingons")
+  end
+
 
   -- check each trader and update missions
   for key, trader in ipairs(traders) do
 
     -- debug trader
     -- print(table_print(trader.comms_data))
+    print("TRADER: "..trader:getCallSign())
 
     if (not trader.comms_data['avoiding']) then
 
-      if (trader.comms_data['state'] == 'running') then
+      if (trader.comms_data['state'] == 'surrendering' ) then
+
+        -- placed into this when a smuggler is hit
+        local player = getPlayerByCallSign(trader.comms_data['chased_by'])
+
+        comms_target:setFaction("Independent")
+        comms_target:setCommsScript('comms_ship_smuggler.lua')
+        comms_target:setScannedByFaction("Starfleet", true)
+        comms_target.comms_data['state'] = 'stopped'
+        comms_target.comms_data['stopped_by'] = player:getCallSign()
+        comms_target:orderIdle()
+
+      elseif (trader.comms_data['state'] == 'running') then
         -- should already be heading away from the player
         local player = getPlayerByCallSign(trader.comms_data['chased_by'])
         local range = distance(trader, player)
         if (range > 60000) then
 
           -- add a replacement, use next type_index
-          if (act > 2) then
+          if (act > 0) then
             local destination = mining_stations[random(1, mining_station_count)]
             local destination_x, destination_y = destination:getPosition();
             local freighter = createTrader('dock mine', destination, destination_x+random(2000, 6000), destination_y+random(-1000, 1000), trader.comms_data['type_index'] + 1)
@@ -666,21 +697,12 @@ function generic_behaviour(act)
 
           -- remove the old one
           trader:destroy()
-          traders[key] = nil
 
-        elseif (trader.comms_data['type'] == 'rebel') and trader.comms_data['loading'] then
+        elseif (trader.comms_data['type'] == 'rebel') and trader:getWeaponStorage("HVLI") > 0 then
 
-          if (trader:getWeaponStorage("HVLI") > 0) then
-            trader.comms_data['loaded'] = true
-            trader.comms_data['loading'] = false
-          end
+              trader:orderAttack(player)
 
-        elseif (trader.comms_data['type'] == 'rebel') and trader.comms_data['loaded'] then
-          -- rebels running will fight until they have no HVLI left
-
-          if (trader:getWeaponStorage("HVLI") <= 0) then
-
-              trader.comms_data['loaded'] = false
+        else
 
             -- work out a position a long way, immediately away from the player
               local player_x, player_y = player:getPosition()
@@ -688,132 +710,34 @@ function generic_behaviour(act)
               local angle = angleFromVector(player_x, player_y, trader_x, trader_y)
               local run_x, run_y = vectorFromAngle(angle, 100000)
               trader:orderFlyTowardsBlind(run_x, run_y)
-          end
         end
 
       elseif (trader.comms_data['state'] == 'stopped') then
 
         -- boarding means waiting for weapons to send away team
-        if (trader.comms_data['cargo'] == 'boarding') then
+        if (trader.comms_data['cargo'] == nil or trader.comms_data['cargo'] == 'boarding') then
 
           local player = getPlayerByCallSign(trader.comms_data['stopped_by'])
+          local range = distance(trader, player)
 
-          -- deal with by type
-          if (trader.comms_data['type'] == 'trader') then
+          if (range < 3000) then
+            print("ADD BEAM CONTROL")
+            player:removeCustom("outofrange-"..trader:getCallSign())
 
-            player:addCustomButton("Weapons","awayteam-"..trader:getCallSign(),"Beam Away Team to "..trader:getCallSign(),function()
-              player:removeCustom("awayteam-"..trader:getCallSign())
-              sendAwayTeam(trader, player)
-            end)
-
-          elseif (trader.comms_data['type'] == 'smuggler') then
-
-            -- sometimes run, usually give in
-            if (random(1, 10) > 7) then
-
-              -- message back and swith back to running
-              trader.comms_data['cargo'] = nil
-              trader.comms_data['state'] = 'running'
-              trader.comms_data['chased_by'] = player:getCallSign()
-
-              -- work out a position a long way, immediately away from the player
-              local player_x, player_y = player:getPosition()
-              local trader_x, trader_y = trader:getPosition()
-              local angle = angleFromVector(player_x, player_y, trader_x, trader_y)
-              local run_x, run_y = vectorFromAngle(angle, 100000)
-
-              -- make it fast as well player ships max is 90 (except fighters)
-              trader:setImpulseMaxSpeed(random(80, 100))
-              trader:orderFlyTowards(run_x, run_y)
-
-              player:addCustomMessage("Relay","smugglerrun","Away team reports the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign().." you may persue when ready.")
-              player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign()..".", "Red")
-
-              -- drain the players energy
-              local newEnergy = player:getEnergy() - 500
-              if (newEnergy < 0) then
-                newEnergy = 0
-              end
-              player:setEnergy(newEnergy)
-              local newJumpHeat = player:getSystemHeat("jump")
-              newJumpHeat = newJumpHeat + 0.2
-              if (newJumpHeat > 1) then
-                newJumpHeat = 1
-              end
-              player:setSystemHeat("jump", newJumpHeat)
-
-            else
+            -- always allow boarding - if they have got here!
               player:addCustomButton("Weapons","awayteam-"..trader:getCallSign(),"Beam Away Team to "..trader:getCallSign(),function()
                 player:removeCustom("awayteam-"..trader:getCallSign())
                 sendAwayTeam(trader, player)
               end)
-            end
-
-          elseif (trader.comms_data['type'] == 'rebel') then
-
-            -- always run and sabotage the players ship
-
-            -- work out a position a long way, immediately away from the player
-            local player_x, player_y = player:getPosition()
-            local trader_x, trader_y = trader:getPosition()
-            local angle = angleFromVector(player_x, player_y, trader_x, trader_y)
-            local run_x, run_y = vectorFromAngle(angle, 100000)
-
-            -- make it fast as well player ships max is 90 (except fighters)
-            trader:setImpulseMaxSpeed(random(80, 100))
-
-            player:addCustomMessage("Relay",message_id, message)
-            player:addCustomMessage("Relay","rebelrun","Away team reports the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign().." you may persue when ready.")
-            player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." is moving away, they have returning to the "..player:getCallSign()..".", "Red")
-
-            -- drain the players energy
-            local newEnergy = player:getEnergy() - 800
-            if (newEnergy < 0) then
-              newEnergy = 0
-            end
-            player:setEnergy(newEnergy)
-            local newJumpHeat = player:getSystemHeat("jump")
-            newJumpHeat = newJumpHeat + 0.5
-            if (newJumpHeat > 1) then
-              newJumpHeat = 1
-            end
-            player:setSystemHeat("jump", newJumpHeat)
-
-            -- change faction and scan
-            trader:setFaction("Federation Sepratists")
-            trader:setCommsFunction(rebelComms)
-            trader:setScannedByFaction("Starfleet", true)
-
-            -- beef up rebel ships with some weapons
-            trader:setShields(55, 55)
-            trader:setBeamWeapon(0, 45, 0, 1000, 8, 6)
-            trader:setWeaponTubeCount(1) -- Amount of torpedo tubes, and loading time of the tubes.
-            trader:setWeaponTubeDirection(0, 0):setWeaponTubeExclusiveFor(0, "HVLI")
-            trader:setWeaponStorageMax("HVLI", 2)
-            trader:setWeaponStorage("HVLI", 2)
-
-            local range = distance(trader, player)
-            if (range > 20000) then
-              trader:orderFlyTowards(run_x, run_y)
-            else
-              trader.comms_data['loading'] = true
-              trader.comms_data['loaded'] = false
-              trader:orderAttack(player)
-            end
-
-            -- message back and swith back to running
-            trader.comms_data['cargo'] = nil
-            trader.comms_data['state'] = 'running'
-            trader.comms_data['chased_by'] = player:getCallSign()
-            traders[key] = trader
-
+          else
+            print("ADD OUT OF RANGE INFO")
+            player:removeCustom("awayteam-"..trader:getCallSign())
+            player:addCustomInfo("Weapons", "outofrange-"..trader:getCallSign(), trader:getCallSign().." out of range")
           end
-
-        elseif (trader.comms_data['cargo'] == 'checking') then
-
-          -- do nothing, this is now set-up by the weapons special button
-          -- add a variable delay here
-
+        else
+          -- debug trader
+          print("stopped but not picking up cargo!!?")
+          print(table_print(trader.comms_data))
         end
 
       elseif (trader.comms_data['state'] == 'dock mine' or trader.comms_data['state'] == 'dock hub') then
@@ -857,7 +781,6 @@ function generic_behaviour(act)
 
           if (act > 2) then
             trader:destroy()
-            traders[key] = nil
           end
 
         elseif (distance(trader, trader.comms_data['destination']) < 10000) then
@@ -960,6 +883,7 @@ function act_3()
 
   -- 1 big Klingons, plus 1 smaller per player
   klingon_flagship = CpuShip():setFaction("Klingons"):setTemplate("Klingon Kvek"):setPosition(klingon_x, klingon_y):orderAttack(human_station):setCallSign(klingon_ship_names[klingon_ship_names_index])
+  klingon_flagship:setWarpDrive(true)
   klingon_ship_names_index = klingon_ship_names_index + 1
   table.insert(klingon_ships, klingon_flagship)
 
@@ -967,12 +891,13 @@ function act_3()
 
     local player_position_x, player_position_y = player_ship:getPosition()
     local klingon_support = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bloodwing"):setPosition(player_position_x + random(-15000, 15000), player_position_y + random(-15000, 15000)):orderAttack(player_ship):setCallSign(klingon_ship_names[klingon_ship_names_index])
+    klingon_support:setJumpDrive(true)
     klingon_ship_names_index = klingon_ship_names_index + 1
     table.insert(klingon_ships, klingon_support)
   end
 
   for n=1,rebel_deliveries do
-    CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(klingon_x + random(-5000, 25000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
+    CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setJumpDrive(true):setPosition(klingon_x + random(-5000, 25000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
     klingon_ship_names_index = klingon_ship_names_index + 1
   end
   for n=1,traders_destroyed do
@@ -1137,8 +1062,10 @@ function update(delta)
             ambush_ships_count = ambush_ships_count + 2
 
             rebel_fighter1 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x,ambush_y):orderAttack(player_ship1):setCallSign(klingon_ship_names[klingon_ship_names_index])
+            rebel_fighter1:setJumpDrive(true)
             klingon_ship_names_index = klingon_ship_names_index + 1
             rebel_fighter2 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y+500):orderAttack(player_ship1):setCallSign(klingon_ship_names[klingon_ship_names_index])
+            rebel_fighter2:setJumpDrive(true)
             klingon_ship_names_index = klingon_ship_names_index + 1
 
             table.insert(ambush_ships, rebel_fighter1)
@@ -1146,13 +1073,16 @@ function update(delta)
             if player_ship_count == 2 then
               ambush_ships_count = ambush_ships_count + 1
               rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderAttack(player_ship2):setCallSign(klingon_ship_names[klingon_ship_names_index])
+              rebel_fighter3:setJumpDrive(true)
               klingon_ship_names_index = klingon_ship_names_index + 1
               table.insert(ambush_ships, rebel_fighter3)
             elseif player_ship_count == 3 then
               ambush_ships_count = ambush_ships_count + 2
               rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderAttack(player_ship3):setCallSign(klingon_ship_names[klingon_ship_names_index])
+              rebel_fighter3:setJumpDrive(true)
               klingon_ship_names_index = klingon_ship_names_index + 1
               rebel_fighter4 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y-500):orderAttack(player_ship3):setCallSign(klingon_ship_names[klingon_ship_names_index])
+              rebel_fighter4:setJumpDrive(true)
               klingon_ship_names_index = klingon_ship_names_index + 1
               table.insert(ambush_ships, rebel_fighter3)
               table.insert(ambush_ships, rebel_fighter4)
@@ -1170,14 +1100,40 @@ function update(delta)
   if (current_act == 3) then
 
     -- check for no klingon ships
-    local klingon_ship_count = 0
-    for klingon_ship_key, klingon_ship in ipairs(klingon_ships) do
-      if klingon_ship and klingon_ship:isValid() then
-        klingon_ship_count = klingon_ship_count + 1
+    -- local klingon_ship_count = 0
+    -- for klingon_ship_key, klingon_ship in ipairs(klingon_ships) do
+    --   if klingon_ship and klingon_ship:isValid() then
+    --     klingon_ship_count = klingon_ship_count + 1
+    --   end
+    -- end
+
+    -- if klingon_ship_count == 0 then
+    --   victory("Starfleet")
+    -- end
+
+    -- if the player is within 30000 of flagship then it attacks them, otherwise it will attack the base
+    if klingon_flagship then
+      local closestPlayer = nil
+      local closestRange = 30000
+
+      for player_ship_keys, player_ship in ipairs(player_ships) do
+        if player_ship:isValid() then
+          local range = distance(klingon_flagship, player_ship)
+          if range < closestRange then
+            closestRange = range
+            closestPlayer = player_ship
+          end
+        end
+      end
+
+      if closestPlayer then
+        klingon_flagship:orderAttack(closestPlayer)
+      else
+        klingon_flagship:orderAttack(human_station)
       end
     end
 
-    if klingon_ship_count == 0 then
+    if not klingon_flagship:isValid() then
       victory("Starfleet")
     end
 
