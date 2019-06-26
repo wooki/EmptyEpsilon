@@ -6,7 +6,52 @@
 -- the mission could then switch the ship to run etc. instead!
 
 function rebelComms()
-  setCommsMessage("We're not interested in anything you have to say "..comms_source:getCallSign());
+  -- print("rebelComms:")
+  -- print(table_print(comms_target.comms_data))
+
+  local rnd = math.floor(random(1, 5))
+  if rnd == 1 then
+    setCommsMessage("The more you tighten your grip, "..player:getCallSign()..", the more star systems will slip through your fingers.");
+  elseif rnd == 2 then
+    setCommsMessage("Give up the chase "..player:getCallSign().." you'll never catch us!");
+  elseif rnd == 3 then
+    setCommsMessage("Death to the Fascist Federation!");
+  elseif rnd == 4 then
+    setCommsMessage("Leave us alone "..player:getCallSign()..", we're just trying to make a living!");
+  else
+    setCommsMessage("Long live the Rebellion!");
+  end
+end
+
+function runningComms()
+  setCommsMessage("ZZZ We're not interested in anything you have to say "..player:getCallSign());
+end
+
+function surrenderComms()
+  -- print("surrenderComms:")
+  -- print(table_print(comms_target.comms_data))
+
+  setCommsMessage("We're standing down "..player:getCallSign()..", we're just trying to make a living.  Check our cargo if you must!");
+
+  addCommsReply("Surrender accepted "..comms_target:getCallSign().." prepare to be boarded.", function()
+
+    comms_target:setFaction("Independent")
+    comms_target.comms_data['state'] = 'stopped'
+    comms_target.comms_data['cargo'] = nil
+    comms_target.comms_data['stopped_by'] = player:getCallSign()
+    comms_target.comms_data['comms_state'] = nil
+    comms_target:orderIdle()
+    mainMenu()
+
+  end)
+
+  addCommsReply("Too late "..comms_target:getCallSign().." prepare to be die!", function()
+
+    comms_target.comms_data['state'] = 'running'
+    comms_target.comms_data['comms_state'] = 'rebelComms'
+    comms_target:orderAttack(player)
+
+  end)
 end
 
 
@@ -86,7 +131,22 @@ end
 function mainMenu()
 
   -- debug trader
-  print(table_print(comms_target.comms_data))
+  -- print("smuggler comms mainMenu:")
+  -- print(table_print(comms_target.comms_data))
+
+
+  -- special comms state - can;t change to a new commsScript or commsFunction from in here so this will do
+  if (comms_target.comms_data['comms_state'] == 'rebelComms') then
+    rebelComms()
+    return true
+  elseif (comms_target.comms_data['comms_state'] == 'runningComms') then
+    runningComms()
+    return true
+  elseif (comms_target.comms_data['comms_state'] == 'surrenderComms') then
+    surrenderComms()
+    return true
+  end
+
 
   -- range is important
   range = distance(comms_target, player)
@@ -94,21 +154,8 @@ function mainMenu()
   -- depends on state
   if (comms_target.comms_data['state'] == 'running') then
 
-    if (range < 3000) then
-
-      -- sensibly stop for you
-      comms_target.comms_data['state'] = 'stopped'
-      comms_target.comms_data['stopped_by'] = player:getCallSign()
-      comms_target:orderIdle()
-
-      setCommsMessage("Ok, Ok! We're standing down. Send your thugs aboard when you're close enough "..player:getCallSign()..".");
-      stoppedMenu()
-
-    else
-      setCommsMessage("Give up the chase "..player:getCallSign()..", you'll never catch us!");
-      addCommsReply("Continue chasing.", mainMenu)
-
-    end
+    setCommsMessage("XXX Give up the chase "..player:getCallSign()..", you'll never catch us!");
+    addCommsReply("Continue chasing.", mainMenu)
 
   elseif (comms_target.comms_data['state'] == 'stopped') then
 
@@ -154,7 +201,7 @@ function mainMenu()
 
           -- change faction and scan
           comms_target:setFaction("Federation Sepratists")
-          comms_target:setCommsFunction(rebelComms)
+          comms_target.comms_data['comms_state'] = 'runningComms'
           comms_target:setScannedByFaction("Starfleet", true)
 
           -- beef up rebel ships with some weapons
@@ -166,7 +213,23 @@ function mainMenu()
           comms_target:setWeaponStorage("HVLI", random(1, 5))
           comms_target:orderAttack(player)
 
-          setCommsMessage("Long live the Rebellion!");
+          setCommsMessage("Never! "..comms_target:getCallSign().." out");
+
+          -- set event for damage inflicted
+          comms_target:onTakingDamage(function(target, instigator)
+            -- print("HIT: "..target:getCallSign())
+            if (target.comms_data['type'] == 'smuggler') then
+              -- surrender
+              -- print("surrender")
+              target.comms_data['comms_state'] = 'surrenderComms'
+              target:orderIdle()
+              target:openCommsTo(player)
+            else
+              -- print("long live rebellion")
+              target.comms_data['comms_state'] = 'rebelComms'
+              target:openCommsTo(player)
+            end
+          end)
 
         else
           -- sensibly stop for you

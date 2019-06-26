@@ -7,6 +7,10 @@
 -- Variation[2 Crews]: Two player ships
 -- Variation[3 Crews]: Three player ships
 
+-- also requires star trek mod, along with custom ships, custom faction file and added sound effects etc.
+-- requires comms_ship_smuggler.lua
+-- requires comms_station_unfriendly.lua
+
 require("utils.lua")
 require("more_utils.lua")
 require("delays.lua")
@@ -231,11 +235,11 @@ function mainBaseComms()
   addCommsReply("Sitrep please.", function()
     local sitrep = [[In-system situation:
 
-Rebel deliveries made: ]]..rebel_deliveries..[[
+Sepratist deliveries made: ]]..rebel_deliveries..[[
 
 Smuggler deliveries made: ]]..smugglers_arrived..[[
 
-Rebels destroyed: ]]..rebels_destroyed..[[
+Sepratists destroyed: ]]..rebels_destroyed..[[
 
 Traders destroyed: ]]..traders_destroyed..[[
       ]]
@@ -252,7 +256,7 @@ Traders destroyed: ]]..traders_destroyed..[[
           if (random(1, 10) > 3) then
             setCommsMessage("You find a quiet little bar on deck "..math.floor(random(11, 19)).." and keep yourselves to yourselves.")
           elseif (random(1, 10) > 3) and current_act == 2 then
-            setCommsMessage("You get chatting to a shady smuggler in a dark and smokey dive bar, he tells you the rebels have managed to get their hands on a stockpile of mines.")
+            setCommsMessage("You get chatting to a shady smuggler in a dark and smokey dive bar, he tells you the sepratists have managed to get their hands on a stockpile of mines.")
           else
             setCommsMessage("You vaguely remember singing \"You've Lost That Loving Feeling\" in front of a bar full of naval cadets and it has badly hurt your crews reputation.")
             comms_source:takeReputationPoints(20)
@@ -666,23 +670,11 @@ function generic_behaviour(act)
 
     -- debug trader
     -- print(table_print(trader.comms_data))
-    print("TRADER: "..trader:getCallSign())
+    -- print("TRADER: "..trader:getCallSign())
 
     if (not trader.comms_data['avoiding']) then
 
-      if (trader.comms_data['state'] == 'surrendering' ) then
-
-        -- placed into this when a smuggler is hit
-        local player = getPlayerByCallSign(trader.comms_data['chased_by'])
-
-        comms_target:setFaction("Independent")
-        comms_target:setCommsScript('comms_ship_smuggler.lua')
-        comms_target:setScannedByFaction("Starfleet", true)
-        comms_target.comms_data['state'] = 'stopped'
-        comms_target.comms_data['stopped_by'] = player:getCallSign()
-        comms_target:orderIdle()
-
-      elseif (trader.comms_data['state'] == 'running') then
+      if (trader.comms_data['state'] == 'running') then
         -- should already be heading away from the player
         local player = getPlayerByCallSign(trader.comms_data['chased_by'])
         local range = distance(trader, player)
@@ -721,7 +713,6 @@ function generic_behaviour(act)
           local range = distance(trader, player)
 
           if (range < 3000) then
-            print("ADD BEAM CONTROL")
             player:removeCustom("outofrange-"..trader:getCallSign())
 
             -- always allow boarding - if they have got here!
@@ -730,14 +721,9 @@ function generic_behaviour(act)
                 sendAwayTeam(trader, player)
               end)
           else
-            print("ADD OUT OF RANGE INFO")
             player:removeCustom("awayteam-"..trader:getCallSign())
             player:addCustomInfo("Weapons", "outofrange-"..trader:getCallSign(), trader:getCallSign().." out of range")
           end
-        else
-          -- debug trader
-          print("stopped but not picking up cargo!!?")
-          print(table_print(trader.comms_data))
         end
 
       elseif (trader.comms_data['state'] == 'dock mine' or trader.comms_data['state'] == 'dock hub') then
