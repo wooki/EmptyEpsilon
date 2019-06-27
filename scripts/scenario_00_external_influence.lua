@@ -158,11 +158,11 @@ function commsGamble()
 end
 
 weapon_cost = {
-    Homing = 2,
-    HVLI = 2,
-    Mine = 2,
-    Nuke = 15,
-    EMP = 10
+    Homing = 10,
+    HVLI = 6,
+    Mine = 12,
+    Nuke = 60,
+    EMP = 20
 }
 
 function getWeaponCost(weapon)
@@ -267,7 +267,7 @@ Traders destroyed: ]]..traders_destroyed..[[
         addCommsReply("Back", mainBaseComms)
       end)
   else
-    addCommsReply("Please send reinforcements! (80 rep)", function()
+    addCommsReply("Please send reinforcements! (220 rep)", function()
         if comms_source:getWaypointCount() < 1 then
             setCommsMessage("Negatory "..comms_source:getCallSign()..", you need to set a waypoint before we can send reinforcements.");
             addCommsReply("Back", mainBaseComms)
@@ -276,7 +276,7 @@ Traders destroyed: ]]..traders_destroyed..[[
             addCommsReply("Back", mainBaseComms)
             for n=1,comms_source:getWaypointCount() do
                 addCommsReply("WP" .. n, function()
-                    if comms_source:takeReputationPoints(80) then
+                    if comms_source:takeReputationPoints(220) then
                         ship = CpuShip():setFactionId(comms_target:getFactionId()):setPosition(comms_target:getPosition()):setTemplate("Intrepid Class"):setScanned(true):orderDefendLocation(comms_source:getWaypoint(n))
                         setCommsMessage("Good call "..comms_source:getCallSign()..", we have dispatched " .. ship:getCallSign() .. " to assist at WP" .. n);
                         addCommsReply("Back", mainBaseComms)
@@ -436,6 +436,22 @@ Once identified as sepratists you may chase down and destroy them but civilian a
 Kameiros out.]])
 end
 
+function addNukesToPlayer(player, shipClass)
+  if shipClass == "Constitution Refit" then
+    player:setWeaponStorage("Nuke", 0)
+    player:setWeaponStorageMax("Nuke", 1)
+  elseif shipClass == "Galaxy Class" then
+    player:setWeaponStorage("Nuke", 2)
+    player:setWeaponStorageMax("Nuke", 4)
+  elseif shipClass == "Defiant Class" then
+    player:setWeaponStorage("Nuke", 0)
+    player:setWeaponStorageMax("Nuke", 0)
+  elseif shipClass == "Prometheus Class" then
+    player:setWeaponStorage("Nuke", 0)
+    player:setWeaponStorageMax("Nuke", 1)
+  end
+end
+
 function init()
 
   current_act = 0
@@ -443,7 +459,6 @@ function init()
   addGMFunction("Act 1", act_1)
   addGMFunction("Act 2", act_2)
   addGMFunction("Act 3", act_3)
-
 
   local shipClass = "Constitution Refit"
   local ship2Class = "Constitution Refit"
@@ -483,6 +498,8 @@ function init()
   player_ships = {}
   human_ship = PlayerSpaceship():setFaction("Starfleet"):setTemplate(shipClass):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
   human_ship:setPosition(random(-29000, -31000), random(-41000, -43000))
+  addNukesToPlayer(human_ship, shipClass)
+
   table.insert(player_ships, human_ship)
   player_ship1 = human_ship
   player_ship_names_index = player_ship_names_index + 1
@@ -490,6 +507,7 @@ function init()
   if player_ship_count > 1 then
     human_ship2 = PlayerSpaceship():setFaction("Starfleet"):setTemplate(ship2Class):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
     human_ship2:setPosition(random(-29000, -31000), random(-41000, -43000))
+    addNukesToPlayer(human_ship2, ship2Class)
     table.insert(player_ships, human_ship2)
     player_ship2 = human_ship2
     player_ship_names_index = player_ship_names_index + 1
@@ -498,6 +516,7 @@ function init()
   if player_ship_count > 2 then
     human_ship3 = PlayerSpaceship():setFaction("Starfleet"):setTemplate(ship3Class):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
     human_ship3:setPosition(random(-29000, -31000), random(-41000, -43000))
+    addNukesToPlayer(human_ship3, ship3Class)
     table.insert(player_ships, human_ship3)
     player_ship3 = human_ship3
     player_ship_names_index = player_ship_names_index + 1
@@ -591,25 +610,33 @@ function generic_behaviour(act)
 
       elseif (trader.comms_data['type'] == 'smuggler') then
         traders_destroyed = traders_destroyed + 1
-        reward = -24
-        message = "We have reports you have destroyed the "..trader.comms_data['callsign']..", as a suspected smuggler we will overlook this action but it should be noted this makes for troublesome public relations."
+        if current_act == 1 then
+          reward = -24
+          message = "We have reports you have destroyed the "..trader.comms_data['callsign']..", as a suspected smuggler we will overlook this action but it should be noted this makes for troublesome public relations."
+        end
       else
         traders_destroyed = traders_destroyed + 1
-        reward = -100
-        message = "We have reports you have destroyed the "..trader.comms_data['callsign']..", as an innocent trader this will count against you in your next performance review!"
+        if current_act == 1 then
+          reward = -100
+          message = "We have reports you have destroyed the "..trader.comms_data['callsign']..", as an innocent trader this will count against you in your next performance review!"
+        end
       end
 
-      updateAllStationFriendlyness(trader.comms_data['type'])
+      if reward ~= 0 then
+        updateAllStationFriendlyness(trader.comms_data['type'])
+      end
 
       for culprit_key, culprit in ipairs(culprits) do
 
-        playSoundFile("chirp.ogg")
-        human_station:sendCommsMessage(culprit, message);
+        if reward ~= 0 then
+          playSoundFile("chirp.ogg")
+          human_station:sendCommsMessage(culprit, message);
+        end
 
         if reward > 0 then
           culprit:addReputationPoints(reward)
           culprit:addToShipLog("[REPUTATION] Rebel destroyed, reward "..reward.." reputation.", "Green")
-        else
+        elseif reward > 0 then
           culprit:takeReputationPoints(reward * -1)
           culprit:addToShipLog("[REPUTATION] Trader destroyed, penalty "..(reward * -1).." reputation.", "Red")
         end

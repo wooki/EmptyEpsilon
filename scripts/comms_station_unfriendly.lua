@@ -24,18 +24,18 @@ function mainMenu()
             EMP = 50
         },
         weapon_cost = {
-            Homing = 2,
-            HVLI = 2,
-            Mine = 2,
-            Nuke = 15,
-            EMP = 10
+            Homing = 12,
+            HVLI = 8,
+            Mine = 14,
+            Nuke = 80,
+            EMP = 25
         },
         services = {
             supplydrop = 75,
             reinforcements = 90,
         },
         service_cost = {
-            supplydrop = 100,
+            supplydrop = 120,
             reinforcements = 150,
         }
     })
@@ -169,6 +169,7 @@ Here is our inventory.
                             local script = Script()
                             script:setVariable("position_x", position_x):setVariable("position_y", position_y)
                             script:setVariable("target_x", target_x):setVariable("target_y", target_y)
+                            script:setVariable("player_faction_id", player:getFactionId())
                             script:setVariable("faction_id", comms_target:getFactionId()):run("supply_drop.lua")
                             useWeaponStock("Nuke", 1)
                             useWeaponStock("Homing", 4)

@@ -11,7 +11,7 @@ function update(delta)
 	local x, y = my_ship:getPosition()
 	if state == 0 then
 		if math.abs(x - target_x) < 300 and math.abs(y - target_y) < 300 then
-			SupplyDrop():setFactionId(faction_id):setPosition(target_x + random(-300, 300), target_y + random(-300, 300)):setEnergy(500):setWeaponStorage("Nuke", 1):setWeaponStorage("Homing", 4):setWeaponStorage("Mine", 2):setWeaponStorage("EMP", 1)
+			SupplyDrop():setFactionId(player_faction_id):setPosition(target_x + random(-300, 300), target_y + random(-300, 300)):setEnergy(500):setWeaponStorage("Nuke", 1):setWeaponStorage("Homing", 4):setWeaponStorage("Mine", 2):setWeaponStorage("EMP", 1)
 			my_ship:orderFlyTowardsBlind(position_x, position_y)
 			state = 1
 		end
