@@ -62,8 +62,12 @@ function distance(a, b, c, d)
         print(type(a), type(b), type(c), type(d))
         error("distance() function used incorrectly", 2)
     end
-    local xd, yd = (x1 - x2), (y1 - y2)
-    return math.sqrt(xd * xd + yd * yd)
+    if type(x1) == "number" and type(x2) == "number" and type(y1) == "number" and type(y2) == "number" then
+        local xd, yd = (x1 - x2), (y1 - y2)
+        return math.sqrt(xd * xd + yd * yd)
+    else
+        return 0
+    end
 end
 
 -- Given an angle and length, return a relative vector (x, y coordinates).
@@ -170,7 +174,7 @@ end
 -- Perlin Noise is used to create a sort of natural look to the created objects.
 -- Use the perlin_z-parameter together with density to control amound of placed objects
 -- Sensible values for perlin_z are in a range of {0.1 .. 0.5}
--- 
+--
 -- Example:
 --
 --   -- Creates a 10x10 grid space filled with some asteroids and nebulas
@@ -186,7 +190,7 @@ function placeRandomObjects(object_type, density, perlin_z, x, y, x_grids, y_gri
     -- Size of EE grid
     local grid_size = 20000
 
-    -- Z-axis of Perlin distribution. 
+    -- Z-axis of Perlin distribution.
     local perlin_magic_z = perlin_z
 
     -- Perlin noise is not random, so we'll pick a random spot in its distribution

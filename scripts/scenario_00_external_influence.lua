@@ -605,8 +605,10 @@ function generic_behaviour(act)
       local reward = 0
       if (trader.comms_data['type'] == 'rebel') then
         rebels_destroyed = rebels_destroyed + 1
-        reward = 60
-        message = "We have reports you have destroyed the rebel ship the "..trader.comms_data['callsign']..", good work!"
+        if current_act == 1 then
+          reward = 60
+          message = "We have reports you have destroyed the rebel ship the "..trader.comms_data['callsign']..", good work!"
+        end
 
       elseif (trader.comms_data['type'] == 'smuggler') then
         traders_destroyed = traders_destroyed + 1
