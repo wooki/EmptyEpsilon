@@ -665,20 +665,32 @@ function generic_behaviour(act)
   -- watch for destroyed mining stations and adjust count and reindex or just end game
   for key, mining_station in ipairs(mining_stations) do
     if not (mining_station:isValid()) then
-      globalMessage(mining_station:getCallSign().." was destroyed, humans lose!")
+      if mining_station:getCallSign() then
+        globalMessage(mining_station:getCallSign().." was destroyed, humans lose!")
+      else
+        globalMessage("Mining station was destroyed, humans lose!")
+      end
     end
   end
 
   -- watch for destroyed hub - end game
   for key, hub in ipairs(trade_hubs) do
     if not (hub:isValid()) then
-      globalMessage(hub:getCallSign().." was destroyed, humans lose!")
+      if hub:getCallSign() then
+        globalMessage(hub:getCallSign().." was destroyed, humans lose!")
+      else
+        globalMessage("Trade station was destroyed, humans lose!")
+      end
     end
   end
 
   -- watch for destroyed human base
   if not (human_station:isValid()) then
-    globalMessage(human_station:getCallSign().." was destroyed, humans lose!")
+    if human_station:getCallSign() then
+        globalMessage(human_station:getCallSign().." was destroyed, humans lose!")
+      else
+        globalMessage("Base was destroyed, humans lose!")
+      end
   end
 
   -- watch for no human players
@@ -1060,48 +1072,46 @@ function update(delta)
 
           -- spawn an ambush
           playSoundFile("decloak.ogg")
-          if ambush_ships_count == 0 then
-            ambush_waves = ambush_waves -1
-            local ambush_x = 37794
-            local ambush_y = 33117
-            if random(1, 10) > 7 then
-              local ambush_x = 29085
-              local ambush_y = 399914
-            elseif random(1, 10) > 7 then
-              local ambush_x = 30493
-              local ambush_y = 46403
-            end
-            ambush_x = ambush_x + random(-500, 500)
-            ambush_y = ambush_y random(-500, 500)
+          ambush_waves = ambush_waves -1
+          local ambush_x = 37794
+          local ambush_y = 33117
+          if random(1, 10) > 7 then
+            local ambush_x = 29085
+            local ambush_y = 399914
+          elseif random(1, 10) > 7 then
+            local ambush_x = 30493
+            local ambush_y = 46403
+          end
+          ambush_x = ambush_x + random(-500, 500)
+          ambush_y = ambush_y random(-500, 500)
 
+          ambush_ships_count = ambush_ships_count + 2
+
+          rebel_fighter1 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x,ambush_y):orderAttack(player_ship1):setCallSign(klingon_ship_names[klingon_ship_names_index])
+          rebel_fighter1:setJumpDrive(true)
+          klingon_ship_names_index = klingon_ship_names_index + 1
+          rebel_fighter2 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y+500):orderAttack(player_ship1):setCallSign(klingon_ship_names[klingon_ship_names_index])
+          rebel_fighter2:setJumpDrive(true)
+          klingon_ship_names_index = klingon_ship_names_index + 1
+
+          table.insert(ambush_ships, rebel_fighter1)
+          table.insert(ambush_ships, rebel_fighter2)
+          if player_ship_count == 2 then
+            ambush_ships_count = ambush_ships_count + 1
+            rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderAttack(player_ship2):setCallSign(klingon_ship_names[klingon_ship_names_index])
+            rebel_fighter3:setJumpDrive(true)
+            klingon_ship_names_index = klingon_ship_names_index + 1
+            table.insert(ambush_ships, rebel_fighter3)
+          elseif player_ship_count == 3 then
             ambush_ships_count = ambush_ships_count + 2
-
-            rebel_fighter1 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x,ambush_y):orderAttack(player_ship1):setCallSign(klingon_ship_names[klingon_ship_names_index])
-            rebel_fighter1:setJumpDrive(true)
+            rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderAttack(player_ship3):setCallSign(klingon_ship_names[klingon_ship_names_index])
+            rebel_fighter3:setJumpDrive(true)
             klingon_ship_names_index = klingon_ship_names_index + 1
-            rebel_fighter2 = CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y+500):orderAttack(player_ship1):setCallSign(klingon_ship_names[klingon_ship_names_index])
-            rebel_fighter2:setJumpDrive(true)
+            rebel_fighter4 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y-500):orderAttack(player_ship3):setCallSign(klingon_ship_names[klingon_ship_names_index])
+            rebel_fighter4:setJumpDrive(true)
             klingon_ship_names_index = klingon_ship_names_index + 1
-
-            table.insert(ambush_ships, rebel_fighter1)
-            table.insert(ambush_ships, rebel_fighter2)
-            if player_ship_count == 2 then
-              ambush_ships_count = ambush_ships_count + 1
-              rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderAttack(player_ship2):setCallSign(klingon_ship_names[klingon_ship_names_index])
-              rebel_fighter3:setJumpDrive(true)
-              klingon_ship_names_index = klingon_ship_names_index + 1
-              table.insert(ambush_ships, rebel_fighter3)
-            elseif player_ship_count == 3 then
-              ambush_ships_count = ambush_ships_count + 2
-              rebel_fighter3 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x-500,ambush_y+500):orderAttack(player_ship3):setCallSign(klingon_ship_names[klingon_ship_names_index])
-              rebel_fighter3:setJumpDrive(true)
-              klingon_ship_names_index = klingon_ship_names_index + 1
-              rebel_fighter4 = CpuShip():setFaction("Federation Sepratists"):setTemplate("Klingon Bird Of Prey"):setPosition(ambush_x+500,ambush_y-500):orderAttack(player_ship3):setCallSign(klingon_ship_names[klingon_ship_names_index])
-              rebel_fighter4:setJumpDrive(true)
-              klingon_ship_names_index = klingon_ship_names_index + 1
-              table.insert(ambush_ships, rebel_fighter3)
-              table.insert(ambush_ships, rebel_fighter4)
-            end
+            table.insert(ambush_ships, rebel_fighter3)
+            table.insert(ambush_ships, rebel_fighter4)
           end
 
         end
