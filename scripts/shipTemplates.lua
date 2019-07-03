@@ -22,3 +22,4 @@ require("shipTemplates_Dreadnaught.lua")
 require("shipTemplates_OLD.lua")
 
 require("shipTemplates_Trek.lua")
+require("shipTemplates_Jim.lua")

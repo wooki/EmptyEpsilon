@@ -586,3 +586,4 @@ for type=1,5 do
 end
 
 require("model_data_trek_pack.lua")
+require("model_data_jim.lua")

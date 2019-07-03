@@ -1,0 +1,13 @@
+-- template = ShipTemplate():setName("Cruiseliner"):setClass("Corvette", "Freighter"):setModel("cruiseliner")
+-- template:setDescription([[These freighters are designed to transport armed troops, military support personnel, and combat gear.]])
+-- template:setHull(100)
+-- template:setShields(50, 50)
+-- template:setSpeed(60, 6, 10)
+-- template:setRadarTrace("radar_transport.png")
+
+-- template = ShipTemplate():setName("Probe"):setClass("Corvette", "Freighter"):setModel("probe")
+-- template:setDescription([[These freighters are designed to transport armed troops, military support personnel, and combat gear.]])
+-- template:setHull(100)
+-- template:setShields(50, 50)
+-- template:setSpeed(60, 6, 10)
+-- template:setRadarTrace("radar_transport.png")

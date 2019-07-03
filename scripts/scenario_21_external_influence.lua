@@ -1,5 +1,5 @@
 -- Name: External Influences
--- Description: Players police a trade route in the Euripides system as a rebel scheme unfolds
+-- Description: Players police a trade route in the Euripides system as a federation sepratist movement gains momentum
 -- Type: Mission
 -- Variation[1 Galaxy Class]: One player ship, Galaxy Class
 -- Variation[1 Constitution Class]: One player ship, Constitution Class
@@ -13,6 +13,7 @@
 
 require("utils.lua")
 require("more_utils.lua")
+require("trek_utils.lua")
 require("delays.lua")
 
 player_ship_names = shuffle({
@@ -425,7 +426,7 @@ function act_1()
 
   end -- mining_station_count
 
-  missionMessage("act_1", [[Welcome to the ringed gas giant Euripides.
+  missionMessage(player_ships, timers, "act_1", [[Welcome to the ringed gas giant Euripides.
 
 There are a number of mining stations in the rings of Euripides and your job is to police the commercial traffic in the system.
 
@@ -670,6 +671,7 @@ function generic_behaviour(act)
       else
         globalMessage("Mining station was destroyed, humans lose!")
       end
+      victory("Klingons")
     end
   end
 
@@ -681,6 +683,7 @@ function generic_behaviour(act)
       else
         globalMessage("Trade station was destroyed, humans lose!")
       end
+      victory("Klingons")
     end
   end
 
@@ -691,6 +694,7 @@ function generic_behaviour(act)
       else
         globalMessage("Base was destroyed, humans lose!")
       end
+      victory("Klingons")
   end
 
   -- watch for no human players
@@ -824,7 +828,7 @@ function generic_behaviour(act)
   for key, trader in ipairs(traders) do
     for other_key, other_trader in ipairs(traders) do
 
-      if key ~= other_key then
+      if key ~= other_key and trader:isValid() and other_trader:isValid() then
 
            if (not trader.comms_data['avoiding']) and (distance(trader, other_trader) < 1000) then
 
@@ -937,7 +941,7 @@ function act_3()
   end
 
   -- send mission update
-missionMessage("act_3", [[We have intelligence that suggests the Rebels have been funded and supported by the Klingon Empire!
+missionMessage(player_ships, timers, "act_3", [[We have intelligence that suggests the Rebels have been funded and supported by the Klingon Empire!
 
 They have most likely been using the rebel faction for their own end and we suspect an attack is imminent.
 
@@ -969,7 +973,7 @@ function act_2()
     createObjectsOnLine(42000, 58000, 58000, 42000, 500, Mine, 1, 12, 800)
 
     -- send mission update
-  missionMessage("act_2", [[We have been monitoring Rebel communications and identified their system headquarters.
+  missionMessage(player_ships, timers, "act_2", [[We have been monitoring Rebel communications and identified their system headquarters.
 
 Immediately cease all patrol duties and proceed to sector ]]..rebel_base:getSectorName()..[[.
 
@@ -979,43 +983,6 @@ Kameiros out.]])
 
 end
 
-
--- message players with mission specific info, also add to ship log
-function missionMessage(message_id, message)
-
-  -- delay mission messages
-  addDelayedCallback(timers, message_id, 5, function()
-
-    for player_ship_keys, player_ship in ipairs(player_ships) do
-
-    -- print("missionMessage:")
-    -- print("Relay  = " .. tostring(player_ship:hasPlayerAtPosition("relayOfficer")))
-    -- print("Operations  = " .. tostring(player_ship:hasPlayerAtPosition("operationsOfficer")))
-    -- print("single  = " .. tostring(player_ship:hasPlayerAtPosition("singlePilot")))
-
-    if (player_ship:hasPlayerAtPosition("Relay")) then
-      playSoundFile("chirp.ogg")
-      player_ship:addCustomMessage("Relay",message_id, message)
-      player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
-    elseif (player_ship:hasPlayerAtPosition("Operations")) then
-      playSoundFile("chirp.ogg")
-      player_ship:addCustomMessage("Operations",message_id, message)
-      player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
-    elseif (player_ship:hasPlayerAtPosition("single")) then
-      playSoundFile("chirp.ogg")
-      player_ship:addCustomMessage("single",message_id, message)
-      player_ship:addToShipLog("["..human_station:getCallSign().."] "..message, "Yellow")
-    else
-      addDelayedCallback(timers, message_id .. '-delayed', 5, function()
-        missionMessage(message_id, message)
-      end)
-    end
-
-  end
-
-  end)
-
-end
 
 function update(delta)
   -- cp scripts/* ./EmptyEpsilon.app/Contents/Resources/scripts/ && cp scripts/* ~/Dropbox/ee-dist/EmptyEpsilon.app/Contents/Resources/scripts/ && EmptyEpsilon.app/Contents/MacOS/EmptyEpsilon
@@ -1137,26 +1104,33 @@ function update(delta)
     -- end
 
     -- if the player is within 30000 of flagship then it attacks them, otherwise it will attack the base
-    if klingon_flagship then
-      local closestPlayer = nil
-      local closestRange = 30000
+    for klingon_ship_key, klingon_ship in ipairs(klingon_ships) do
+      if klingon_ship and klingon_ship:isValid() then
 
-      for player_ship_keys, player_ship in ipairs(player_ships) do
-        if player_ship:isValid() then
-          local range = distance(klingon_flagship, player_ship)
-          if range < closestRange then
-            closestRange = range
-            closestPlayer = player_ship
+        local closestPlayer = human_station
+        local closestRange = distance(klingon_ship, human_station) * 1.5
+        if closestRange < 30000 then
+          closestRange = 30000
+        end
+
+        for player_ship_keys, player_ship in ipairs(player_ships) do
+          if player_ship:isValid() then
+            local range = distance(klingon_ship, player_ship)
+            if range < closestRange then
+              closestRange = range
+              closestPlayer = player_ship
+            end
           end
         end
-      end
 
-      if closestPlayer then
-        klingon_flagship:orderAttack(closestPlayer)
-      else
-        klingon_flagship:orderAttack(human_station)
+        if closestPlayer then
+          klingon_ship:orderAttack(closestPlayer)
+        else
+          klingon_ship:orderRoaming()
+        end
       end
     end
+
 
     if not klingon_flagship:isValid() then
       victory("Starfleet")
