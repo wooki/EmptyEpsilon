@@ -35,6 +35,7 @@ end
 
 function endGameMessage(delaytimers, message, victors)
 
+  print("endGameMessage: "..message.." ("..victors..")")
   globalMessage(message)
 
   addDelayedCallback(delaytimers, "endgameMessage", 10, function()

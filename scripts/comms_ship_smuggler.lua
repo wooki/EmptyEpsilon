@@ -24,7 +24,7 @@ function rebelComms()
 end
 
 function runningComms()
-  setCommsMessage("ZZZ We're not interested in anything you have to say "..player:getCallSign());
+  setCommsMessage("We're not interested in anything you have to say "..player:getCallSign());
 end
 
 function surrenderComms()

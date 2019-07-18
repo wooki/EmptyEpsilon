@@ -10,6 +10,14 @@ function angleFromVector(x1, y1, x2, y2)
     return (math.atan2(x2, y2) - math.atan2(x1, y1) ) * 180 / math.pi
 end
 
+function RandomString(length)
+  local res = ""
+  for i = 1, length do
+    res = res .. string.char(math.random(65, 90))
+  end
+  return res
+end
+
 -- util for shuffling a table into a random order
 function shuffle(tbl)
   local size = #tbl

@@ -1,4 +1,4 @@
--- Name: External Influences
+-- Name: Galaxy Space Trek Quest - Patrol Duty
 -- Description: Players police a trade route in the Euripides system as a federation sepratist movement gains momentum
 -- Type: Mission
 -- Variation[1 Galaxy Class]: One player ship, Galaxy Class
@@ -10,6 +10,7 @@
 -- also requires star trek mod, along with custom ships, custom faction file and added sound effects etc.
 -- requires comms_ship_smuggler.lua
 -- requires comms_station_unfriendly.lua
+
 
 require("utils.lua")
 require("more_utils.lua")
@@ -453,6 +454,90 @@ function addNukesToPlayer(player, shipClass)
   end
 end
 
+function notifyScienceOfSensorButtons(player)
+
+  -- notify player
+  player:addCustomMessage("Science","sensorupgrademessage-"..player:getCallSign(),[[The sensor array has been configured to search for contraband.
+
+Access using the <Scanning> button on the right.]])
+end
+
+-- scan the area for potential contraband targets
+function addScienceScan(player, sensorRange)
+
+  -- add general sweep
+  player:addCustomButton("Science","sweep-".."-"..tostring(sensorRange).."-"..player:getCallSign(),"Sweep in "..tostring(math.floor(sensorRange / 1000)).."AU",function()
+
+    local energyRequired = math.floor(sensorRange / 500)
+    if player:getEnergyLevel() < energyRequired then
+
+      player:addCustomMessage("Science","notenoughenergy-".."-"..tostring(sensorRange).."-"..player:getCallSign(),"Not enough energy to perform sensor sweep, you required "..tostring(energyRequired))
+
+    else
+      player:removeCustom("sweep-".."-"..tostring(25000).."-"..player:getCallSign())
+      player:removeCustom("sweep-".."-"..tostring(10000).."-"..player:getCallSign())
+      player:removeCustom("sweep-".."-"..tostring(3000).."-"..player:getCallSign())
+      player:addCustomInfo("Science","sweeping-".."-"..tostring(sensorRange).."-"..player:getCallSign(),"Sweeping for contraband")
+
+      player:setEnergyLevel(player:getEnergyLevel() - energyRequired)
+
+      -- perform the scan
+      addDelayedCallback(timers, "swept-".."-"..tostring(sensorRange).."-"..player:getCallSign(), 10, function()
+        player:removeCustom("sweeping-".."-"..tostring(sensorRange).."-"..player:getCallSign())
+        player:addCustomInfo("Science","recharging-"..player:getCallSign(),"Recharging sensors")
+
+        -- SpaceShip:getSystemHealth
+        -- SpaceShip:getSystemPower
+        -- "frontshield", "rearshield"
+        -- print("getSystemHealth:"..tostring(player:getSystemHealth("frontshield")))
+        -- print("getSystemPower:"..tostring(player:getSystemPower("frontshield")))
+
+        local x, y = player:getPosition()
+        sweptObjects = getObjectsInRadius(x, y, sensorRange)
+        local accuracy = irandom(80, 99)
+        local detected = 0
+        for _, obj in ipairs(sweptObjects) do
+
+          if obj.typeName == "CpuShip" then
+            -- check if it is a smuggler or rebel
+            if obj.comms_data['type'] == "smuggler" or obj.comms_data['type'] == "rebel" then
+
+              if irandom(0, 100) <= accuracy then
+
+                detected = detected + 1
+              end
+
+            elseif irandom(0, 100) > accuracy then
+
+              detected = detected + 1
+            end
+          elseif obj.typeName == "CpuShip" or obj.typeName == "SpaceStation" or obj.typeName == "PlayerSpaceship" then
+            if irandom(0, 100) > accuracy then
+              detected = detected + 1
+            end
+          end
+        end
+
+        player:addCustomMessage("Science","swept-".."-"..tostring(sensorRange).."-"..player:getCallSign(),[[Sensor sweep reports ]]..detected..[[
+   radiation sources consistent with restricted substances and weapons.
+
+  Sensor Range: ]]..tostring(math.floor(sensorRange / 1000))..[[AU
+
+  Confidence: ]]..tostring(accuracy)..[[%]])
+
+      end)
+
+      addDelayedCallback(timers, "addsweep-"..player:getCallSign(), 30, function()
+        player:removeCustom("recharging-"..player:getCallSign())
+        addScienceScan(player, 25000)
+        addScienceScan(player, 10000)
+        addScienceScan(player, 3000)
+      end)
+
+    end
+  end)
+end
+
 function init()
 
   current_act = 0
@@ -498,8 +583,13 @@ function init()
   -- player ship
   player_ships = {}
   human_ship = PlayerSpaceship():setFaction("Starfleet"):setTemplate(shipClass):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
-  human_ship:setPosition(random(-29000, -31000), random(-41000, -43000))
+  -- human_ship:setPosition(random(-29000, -31000), random(-41000, -43000))
+  human_ship:setPosition(0, 0)
   addNukesToPlayer(human_ship, shipClass)
+  addScienceScan(human_ship, 25000)
+  addScienceScan(human_ship, 10000)
+  addScienceScan(human_ship, 3000)
+  notifyScienceOfSensorButtons(human_ship)
 
   table.insert(player_ships, human_ship)
   player_ship1 = human_ship
@@ -509,6 +599,10 @@ function init()
     human_ship2 = PlayerSpaceship():setFaction("Starfleet"):setTemplate(ship2Class):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
     human_ship2:setPosition(random(-29000, -31000), random(-41000, -43000))
     addNukesToPlayer(human_ship2, ship2Class)
+    addScienceScan(human_ship2, 25000)
+    addScienceScan(human_ship2, 10000)
+    addScienceScan(human_ship2, 3000)
+    notifyScienceOfSensorButtons(human_ship2)
     table.insert(player_ships, human_ship2)
     player_ship2 = human_ship2
     player_ship_names_index = player_ship_names_index + 1
@@ -518,6 +612,10 @@ function init()
     human_ship3 = PlayerSpaceship():setFaction("Starfleet"):setTemplate(ship3Class):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
     human_ship3:setPosition(random(-29000, -31000), random(-41000, -43000))
     addNukesToPlayer(human_ship3, ship3Class)
+    addScienceScan(human_ship3, 25000)
+    addScienceScan(human_ship3, 10000)
+    addScienceScan(human_ship3, 3000)
+    notifyScienceOfSensorButtons(human_ship3)
     table.insert(player_ships, human_ship3)
     player_ship3 = human_ship3
     player_ship_names_index = player_ship_names_index + 1
@@ -543,6 +641,8 @@ function createTrader(state, destination, x, y, type_index)
   freighter:setImpulseMaxSpeed(random(70, 75)) -- make a bit faster than normal
   freighter:setRotationMaxSpeed(9) -- make a bit nibler to avoid getting stuck as easily (I hope)
   freighter:setCommsScript('comms_ship_smuggler.lua')
+  -- freighter:setCallSign(trader_types[type_index].."-"..tostring(irandom(1111,9999)))
+  freighter:setCallSign(RandomString(2).."-"..tostring(irandom(1,99)))
   freighter.comms_data = {
     callsign = freighter:getCallSign(),
     state = state,
@@ -795,6 +895,10 @@ function generic_behaviour(act)
             trader.comms_data['type'] = trader_types[trader.comms_data['type_index']]
           end
 
+          -- always change flight no
+          trader:setCallSign(RandomString(2).."-"..tostring(irandom(1,99)))
+          trader.comms_data['callsign'] = trader:getCallSign()
+
           -- arrived, so set new destination
           if (trader.comms_data['state'] == 'dock mine') then
             trader.comms_data['state'] = 'dock hub'
@@ -890,6 +994,8 @@ function sendAwayTeam(trader, player)
 
         playSoundFile("chirp.ogg")
         trader.comms_data['cargo'] = 'contraband'
+        trader.comms_data['type'] = 'trader'
+        trader.comms_data['type_index'] = trader_types_count
         player:addCustomMessage("Relay","awayteamdone","Away team reports we have found contraband aboard the "..trader:getCallSign()..
         [[, we have taken their captain into custody and attached a inhibitor to their ship, clear them to head home when you are ready.]])
         player:addToShipLog("[AWAYTEAM] the "..trader:getCallSign().." has contraband aboard, they have returning to the "..player:getCallSign()..". We have taken their captain into custody and attached a inhibitor to their ship, clear them to head home when you are ready.", "White")
@@ -914,6 +1020,7 @@ function act_3()
 
   -- 1 big Klingons, plus 1 smaller per player
   klingon_flagship = CpuShip():setFaction("Klingons"):setTemplate("Klingon Kvek"):setPosition(klingon_x, klingon_y):orderAttack(human_station):setCallSign(klingon_ship_names[klingon_ship_names_index])
+  klingon_flagship:setHull(180):setShields(220, 220)
   klingon_flagship:setWarpDrive(true)
   klingon_ship_names_index = klingon_ship_names_index + 1
   table.insert(klingon_ships, klingon_flagship)
@@ -928,15 +1035,15 @@ function act_3()
   end
 
   for n=1,rebel_deliveries do
-    CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setJumpDrive(true):setPosition(klingon_x + random(-5000, 25000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
+    CpuShip():setFaction("Klingons"):setTemplate("Klingon Bird Of Prey"):setJumpDrive(true):setPosition(klingon_x + random(-5000, 5000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
     klingon_ship_names_index = klingon_ship_names_index + 1
   end
   for n=1,traders_destroyed do
-    CpuShip():setFaction("Federation Sepratists"):setTemplate("WX-Lindworm"):setPosition(klingon_x + random(-5000, 25000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
+    CpuShip():setFaction("Federation Sepratists"):setTemplate("WX-Lindworm"):setPosition(klingon_x + random(-5000, 5000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
     klingon_ship_names_index = klingon_ship_names_index + 1
   end
   for n=1,smugglers_arrived do
-    CpuShip():setFaction("Federation Sepratists"):setTemplate("MU52 Hornet"):setPosition(klingon_x + random(-5000, 25000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
+    CpuShip():setFaction("Federation Sepratists"):setTemplate("MU52 Hornet"):setPosition(klingon_x + random(-5000, 5000), klingon_y + random(-5000, 25000)):orderDefendTarget(klingon_flagship):setCallSign(klingon_ship_names[klingon_ship_names_index])
     klingon_ship_names_index = klingon_ship_names_index + 1
   end
 
@@ -964,6 +1071,7 @@ function act_2()
 
     -- spawn rebel base
     rebel_base = SpaceStation():setPosition(47000, 44000):setTemplate('Klingon Station'):setFaction("Federation Sepratists"):setRotation(random(0, 360)):setCallSign("Rebel Base")
+    rebel_base:setHullMax(90):setHull(90)
     rebel_base:setCommsFunction(rebelComms)
 
     -- mines
@@ -1031,7 +1139,7 @@ function update(delta)
     end
 
     -- if we have ambushs remaning and no ambush ships check for player ships within ambush area
-    if ambush_waves > 0 and ambush_ships_count <= player_ship_count then
+    if ambush_waves > 0 and ambush_ships_count < player_ship_count then
 
       -- iterate player ships and check distance
       for player_ship_keys, player_ship in ipairs(player_ships) do
