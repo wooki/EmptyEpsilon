@@ -300,7 +300,7 @@ end
 function map()
 
   -- gas giant and rings
-  gas_giant = Planet():setPosition(40000, 0):setPlanetRadius(3000):setPlanetSurfaceTexture("planets/gas-1.png"):setPlanetAtmosphereColor(0.9,0.75,0.6):setCallSign("Euripides")
+  gas_giant = Planet():setPosition(40000, 0):setPlanetRadius(3000):setPlanetSurfaceTexture("planets/gas-jovian.png"):setCallSign("Euripides")
   placeRandomAroundPoint(Asteroid, 150, 9000, 12000, 40000, 0)
   placeRandomAroundPoint(Asteroid, 300, 14000, 18000, 40000, 0)
   placeRandomAroundPoint(VisualAsteroid, 50, 9000, 12000, 40000, 0)
@@ -308,7 +308,7 @@ function map()
 
   -- trade hubs
   trade_hubs = {}
-  trade_hub_planet = Planet():setPosition(-16761, 8582):setPlanetRadius(1000):setPlanetSurfaceTexture("planets/planet-1.png"):setPlanetCloudTexture("planets/clouds-1.png"):setPlanetAtmosphereTexture("planets/atmosphere.png"):setPlanetAtmosphereColor(0.3,0.3,1.0):setCallSign("Amphipolis")
+  trade_hub_planet = Planet():setPosition(-16761, 8582):setPlanetRadius(1000):setPlanetSurfaceTexture("planets/europa.png"):setCallSign("Amphipolis")
   trade_hub = SpaceStation():setPosition(-14761, 10582):setTemplate('Terok Nor'):setFaction("Independent"):setRotation(random(0, 360)):setCallSign("Amphipolis Trade Hub")
   trade_hub.comms_data = trade_hub_comms
   trade_hub:setCommsScript('comms_station_unfriendly.lua')
@@ -338,7 +338,7 @@ function map()
   Nebula():setPosition(47000, 44000)
 
   -- human base
-  human_planet = Planet():setPosition(-20000, -40000):setPlanetRadius(700):setPlanetSurfaceTexture("planets/planet-2.png"):setPlanetAtmosphereTexture("planets/atmosphere.png"):setPlanetAtmosphereColor(1.0,0.1,0.1):setCallSign("Kameiros")
+  human_planet = Planet():setPosition(-20000, -40000):setPlanetRadius(700):setPlanetSurfaceTexture("planets/terran-1.png"):setPlanetAtmosphereColor(0.8, 0.9, 1.0):setPlanetAtmosphereTexture("planets/atmosphere.png"):setCallSign("Kameiros")
   human_station = SpaceStation():setPosition(-19000, -42000):setTemplate('Starbase'):setFaction("Starfleet"):setRotation(random(0, 360)):setCallSign("Kameiros Military Base")
   human_station:setCommsFunction(mainBaseComms)
 
@@ -583,7 +583,7 @@ function init()
   -- player ship
   player_ships = {}
   human_ship = PlayerSpaceship():setFaction("Starfleet"):setTemplate(shipClass):setRotation(random(0, 360)):setCallSign(player_ship_names[player_ship_names_index])
-  -- human_ship:setPosition(random(-29000, -31000), random(-41000, -43000))
+  human_ship:setPosition(random(-29000, -31000), random(-41000, -43000))
   human_ship:setPosition(0, 0)
   addNukesToPlayer(human_ship, shipClass)
   addScienceScan(human_ship, 25000)

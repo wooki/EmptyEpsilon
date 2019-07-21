@@ -94,10 +94,87 @@ template:addDoor(2, 1, true);
 template:addDoor(2, 2, true);
 template:addDoor(1, 2, true);
 
+-- ================
+template = ShipTemplate():setName("Romulan D'deridex Class"):setClass("Frigate", "Cruiser"):setModel("Warbird"):setType("playership")
+template:setDescription([[Romulan Warbird]])
+template:setRadarTrace("radar_st-romulanwarbird.png")
+--template = ShipTemplate():setName("TSN Scout"):setModel("artemisscout"):setType("playership")
+--                 ID Number, Arc, Dir, Range, CycleTime, Dmg
+
+-- int index, float arc, float direction, float range, float cycle_time, float damage)
+template:setBeam(0, 120, 0, 1200.0, 3.0, 6)
+template:setBeamTexture(0, 'beam_green.png')
+
+template:setHull(200)
+template:setShields(120, 60)
+template:setSpeed(92, 10, 26)
+template:setWarpSpeed(850)
+template:setJumpDrive(false)
+template:setCloaking(false)
+template:setCombatManeuver(100, 75)
+
+template:setWeaponStorage("Homing", 10)
+template:setWeaponStorage("Mine", 2)
+template:setWeaponStorage("EMP", 2)
+template:setWeaponStorage("HLVI", 2)
+template:setWeaponStorage("Nuke", 0)
+template:setTubes(5, 20.0)
+template:setTubeDirection(0, 0):weaponTubeDisallowMissle(0, "Mine")
+template:setTubeDirection(1, 0):weaponTubeDisallowMissle(1, "Mine")
+template:setTubeDirection(2, 0):weaponTubeDisallowMissle(2, "Mine")
+template:setTubeDirection(3, 0):weaponTubeDisallowMissle(3, "Mine")
+template:setTubeDirection(4, 180):setWeaponTubeExclusiveFor(4, "Mine")
+
+--   01234  -X-
+--    . . | | |     0
+--    | | | | |     1    Y
+--    . . | | |     2
 
 
+-- AddRoom - X, Y, Length, Height
+-- AddRoomSystem - X, Y, Length, Height, "System Name"
+-- addDoor - X, Y, [Doors on top (true) / on right (false)]
+
+-- ,"Maneuver"
+-- ,"Impulse"
+-- ,"MissileSystem"
+-- ,"RearShield"
+-- , "Warp"
+-- , "JumpDrive"
+-- ,"Reactor"
+-- , "FrontShield"
+-- , "BeamWeapons"
 
 
+-- 0, 0
+-- 1, 0
+template:addRoomSystem(2, 0, 1, 1,"Maneuver");
+template:addDoor(3, 0,false);
+template:addRoom(3, 0, 1, 1);
+template:addDoor(4, 0,false);
+template:addRoomSystem(4, 0, 1, 1, "BeamWeapons");
+
+
+template:addRoomSystem(0, 1, 1, 1,"RearShield");
+template:addDoor(1, 1, false);
+template:addRoomSystem(1, 1, 1, 1, "Warp");
+template:addDoor(2, 1, false);
+template:addRoomSystem(2, 1, 1, 1, "JumpDrive");
+template:addDoor(3, 1,true);
+template:addDoor(3, 1, false);
+template:addRoomSystem(3, 1, 1, 1,"Reactor");
+template:addDoor(4, 1, true);
+template:addRoomSystem(4, 1, 1, 1, "FrontShield");
+
+-- 0, 2
+-- 1, 2
+template:addRoomSystem(2, 2, 1, 1,"Impulse");
+template:addDoor(3, 2, false);
+template:addDoor(3, 2, true);
+template:addRoom(3, 2, 1, 1);
+template:addDoor(4, 2, false);
+template:addDoor(4, 2, true);
+template:addRoomSystem(4, 2, 1, 1,"MissileSystem");
 
 -- ================
 template = ShipTemplate():setName("Constitution Refit"):setClass("Frigate", "Cruiser"):setModel("EnterpriseA"):setType("playership")
@@ -392,10 +469,10 @@ template:setBeam(1, 100, 180, 800.0, 6.0, 6)
 -- independent
 
 template = ShipTemplate():setName("Ferengi Marauder"):setClass("Frigate", "Cruiser"):setModel("ferengi-marauder")
-template:setRadarTrace("radar_st-fer.png")
+template:setRadarTrace("radar_st-ferengiship.png")
 template:setDescription([[Species with a lust for Profit]])
 template:setHull(50)
-template:setShields(20)
+template:setShields(40)
 template:setSpeed(60, 15, 25)
 template:setTubes(1, 15.0)
 template:setWeaponStorage("Homing", 5)
@@ -436,41 +513,44 @@ template = ShipTemplate():setName("Klingon Kvek"):setClass("Klingon", "Cruiser")
 template:setRadarTrace("radar_st-klingonship.png")
 template:setDescription([[Klingon]])
 template:setHull(160)
-template:setShields(200, 200)
-template:setSpeed(80, 15, 15)
+template:setShields(180, 90)
+template:setSpeed(88, 12, 18)
 template:setWarpSpeed(250)
-template:setTubes(2, 12.0)
-template:setWeaponStorage("Homing", 12)
-template:setWeaponStorage("HLVI", 18)
-template:setTubeDirection(1, 10):setWeaponTubeExclusiveFor(1, "Homing")
-template:setTubeDirection(2,-10):setWeaponTubeExclusiveFor(2, "Homing")
-template:setBeam(0, 80, -20, 1000.0, 10.0, 8)
-template:setBeam(1, 80, 20, 1000.0, 10.0, 8)
+template:setTubes(3, 15.0)
+template:setWeaponStorage("Homing", 4)
+template:setWeaponStorage("HLVI", 30)
+template:setTubeDirection(1, 10)
+template:setTubeDirection(2, 10)
+template:setTubeDirection(3,-180):setWeaponTubeExclusiveFor(2, "HLVI")
+template:setBeam(0, 80, -20, 900.0, 8, 8)
+template:setBeam(1, 80, 20, 900.0, 8, 8)
 template:setBeam(2, 80,  180, 800.0, 6.0, 8)
 
 template = ShipTemplate():setName("Klingon Bloodwing"):setClass("Klingon", "Cruiser"):setModel("Bloodwing")
 template:setRadarTrace("radar_st-klingonship.png")
 template:setDescription([[Klingon]])
 template:setHull(90)
-template:setShields(150)
-template:setSpeed(80, 15, 15)
+template:setShields(150, 60)
+template:setSpeed(80, 18, 15)
 template:setTubes(2, 15.0)
-template:setWeaponStorage("Homing", 10)
-template:setTubeDirection(1, 10):setWeaponTubeExclusiveFor(1, "Homing")
-template:setTubeDirection(2,-10):setWeaponTubeExclusiveFor(2, "Homing")
+template:setWeaponStorage("Homing", 6)
+template:setWeaponStorage("HLVI", 30)
+template:setTubeDirection(1, 30)
+template:setTubeDirection(2,-30)
 template:setBeam(0, 80, 0, 1000.0, 7.0, 8)
 template:setBeam(1, 80,  180, 800.0, 7.0, 8)
 
 template = ShipTemplate():setName("Klingon Vorcha"):setClass("Klingon", "Cruiser"):setModel("Vorcha")
 template:setRadarTrace("radar_st-klingonship.png")
 template:setDescription([[Klingon]])
-template:setHull(90)
-template:setShields(200)
-template:setSpeed(80, 15, 15)
+template:setHull(110)
+template:setShields(200, 80)
+template:setSpeed(80, 10, 25)
 template:setTubes(2, 15.0)
-template:setWeaponStorage("Homing", 10)
-template:setTubeDirection(1, 10):setWeaponTubeExclusiveFor(1, "Homing")
-template:setTubeDirection(2,-10):setWeaponTubeExclusiveFor(2, "Homing")
+template:setWeaponStorage("Homing", 6)
+template:setWeaponStorage("HLVI", 30)
+template:setTubeDirection(1, 30)
+template:setTubeDirection(2,-30)
 template:setBeam(0, 80, 0, 1000.0, 8.0, 10)
 template:setBeam(1, 60,  180, 800.0, 8.0, 10)
 
@@ -479,37 +559,47 @@ template = ShipTemplate():setName("Klingon Bird Of Prey"):setClass("Klingon", "C
 template:setRadarTrace("radar_st-birdofprey.png")
 template:setDescription([[Klingon]])
 template:setHull(80)
-template:setShields(90)
-template:setSpeed(80, 25, 25)
+template:setShields(90, 30)
+template:setSpeed(85, 30, 25)
 template:setTubes(1, 20.0)
-template:setWeaponStorage("Homing", 7)
+template:setWeaponStorage("Homing", 6)
+template:setWeaponStorage("HLVI", 10)
 template:setTubeDirection(1, 0) --:setWeaponTubeExclusiveFor(1, "Homing")
-template:setBeam(0, 80, -20, 800.0, 8.0, 6)
-template:setBeam(1, 80, 20, 800.0, 8.0, 6)
-template:setBeam(1, 80,  180, 600.0, 5.0, 6)
+template:setBeam(0, 80, -20, 800.0, 8.0, 8)
+template:setBeam(1, 80, 20, 800.0, 8.0, 8)
+template:setBeam(1, 80,  180, 600.0, 5.0, 8)
 
 template = ShipTemplate():setName("Romulan Warbird"):setClass("Romulan", "Cruiser"):setModel("Warbird")
-template:setRadarTrace("radar_st-rom.png")
+template:setRadarTrace("radar_st-romulanwarbird.png")
 template:setDescription([[Romulan]])
 template:setHull(80)
-template:setShields(250)
-template:setSpeed(50, 15, 25)
-template:setTubes(3, 15.0)
+template:setShields(120, 60)
+template:setSpeed(60, 15, 25)
+template:setTubes(4, 24.0)
 template:setWeaponStorage("Homing", 30)
-template:setTubeDirection(1, 1):setWeaponTubeExclusiveFor(1, "Homing")
-template:setTubeDirection(2,-1):setWeaponTubeExclusiveFor(2, "Homing")
-template:setBeam(0, 80, 0, 1000.0, 7.0, 10)
-template:setBeam(1, 80,  180, 1000.0, 7.0, 10)
+template:setWeaponStorage("EMP", 2)
+template:setTubeDirection(1, 0):setWeaponTubeExclusiveFor(1, "Homing")
+template:setTubeDirection(2, 0):setWeaponTubeExclusiveFor(1, "Homing")
+template:setTubeDirection(3, 0):setWeaponTubeExclusiveFor(1, "Homing")
+template:setTubeDirection(3, -180):setWeaponTubeExclusiveFor(1, "EMP")
+template:setBeam(0, 80, 0, 1000.0, 3.5, 6)
+template:setBeam(1, 80,  180, 1000.0, 3.5, 6)
+template:setBeamTexture(0, 'beam_green.png')
+template:setBeamTexture(1, 'beam_green.png')
 
 template = ShipTemplate():setName("Romulan Bird Of Prey"):setClass("Romulan", "Cruiser"):setModel("RomBirdOfPrey")
-template:setRadarTrace("radar_st-rom.png")
+template:setRadarTrace("radar_st-romulanbird.png")
 template:setDescription([[Romulan]])
-template:setHull(80)
-template:setShields(100)
-template:setSpeed(50, 15, 25)
-template:setTubes(3, 15.0)
+template:setHull(70)
+template:setShields(80, 40)
+template:setSpeed(90, 18, 25)
+template:setTubes(1, 20.0)
+template:setWarpSpeed(800)
 template:setWeaponStorage("Homing", 10)
-template:setTubeDirection(1, 1):setWeaponTubeExclusiveFor(1, "Homing")
-template:setTubeDirection(2,-1):setWeaponTubeExclusiveFor(2, "Homing")
-template:setBeam(0, 80, 0, 500.0, 5.0, 6)
-template:setBeam(1, 80,  180, 500.0, 5.0, 6)
+template:setTubeDirection(0, 0):setWeaponTubeExclusiveFor(1, "Homing")
+template:setBeam(0, 80, 0, 1000.0, 3.5, 6)
+template:setBeam(1, 80,  180, 1000.0, 3.5, 6)
+template:setBeamTexture(0, 'beam_green.png')
+template:setBeamTexture(1, 'beam_green.png')
+
+

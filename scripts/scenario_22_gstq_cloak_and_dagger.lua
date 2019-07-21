@@ -279,7 +279,7 @@ Shield power must be diverted away before you can charge the emitters.]])
 	addDelayedCallback(timers, "brief-science", 5, function()
 		player_ship:addCustomMessage("Science", "brief-science", [[Our sensors have been tuned to detect the Tetryon radiation that a cloaked vessel leaves behind.
 
-Our scientists speculate that the radiation develops sometime after the cloaked vessel has left and then decays slowly. A ship containing will likely return a zero reading.
+Our scientists speculate that the radiation develops sometime after the cloaked vessel has left and then decays slowly. An area containing a cloaked vessel will likely return a zero reading.
 
 Access using the <Scanning> button on the right.]])
 	end)
